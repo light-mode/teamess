@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/menu_chat_item_add_member"
+        android:icon="@drawable/ic_baseline_person_add_24"
+        android:title="@string/menu_chat_item_add_member_title" />
+    <item
+        android:id="@+id/menu_chat_item_remove_member"
+        android:icon="@drawable/ic_baseline_person_remove_24"
+        android:title="@string/menu_chat_item_remove_member_title" />
+    <item
+        android:id="@+id/menu_chat_item_info"
+        android:icon="@drawable/ic_baseline_info_24"
+        android:title="@string/menu_chat_item_info_title" />
+    <item
+        android:id="@+id/menu_chat_item_leave"
+        android:icon="@drawable/ic_baseline_logout_24"
+        android:title="@string/menu_chat_item_leave_title" />
+</menu>

@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="circle">
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <style name="square">
+        <item name="cornerSize">0dp</item>
+    </style>
+
+    <style name="avatar_wrapper_left">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginStart">4dp</item>
+        <item name="cardPreventCornerOverlap">false</item>
+        <item name="shapeAppearanceOverlay">@style/circle</item>
+    </style>
+
+    <style name="avatar_wrapper_right">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginEnd">4dp</item>
+        <item name="cardPreventCornerOverlap">false</item>
+        <item name="shapeAppearanceOverlay">@style/circle</item>
+    </style>
+
+    <style name="avatar">
+        <item name="android:layout_width">52dp</item>
+        <item name="android:layout_height">52dp</item>
+    </style>
+
+    <style name="timestamp_left">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginStart">4dp</item>
+        <item name="android:layout_marginTop">4dp</item>
+        <item name="android:layout_marginBottom">4dp</item>
+        <item name="android:background">@drawable/rounded_corner</item>
+        <item name="android:backgroundTint">@color/design_default_color_primary</item>
+        <item name="android:paddingStart">4dp</item>
+        <item name="android:paddingEnd">4dp</item>
+        <item name="android:textColor">@color/design_default_color_on_primary</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+
+    <style name="timestamp_right">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginEnd">4dp</item>
+        <item name="android:layout_marginTop">4dp</item>
+        <item name="android:layout_marginBottom">4dp</item>
+        <item name="android:background">@drawable/rounded_corner</item>
+        <item name="android:backgroundTint">@color/teal_200</item>
+        <item name="android:paddingStart">4dp</item>
+        <item name="android:paddingEnd">4dp</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:textColor">@color/black</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+
+    <style name="seen_left">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginStart">4dp</item>
+        <item name="android:layout_marginTop">4dp</item>
+        <item name="android:layout_marginBottom">4dp</item>
+        <item name="android:background">@drawable/rounded_corner</item>
+        <item name="android:backgroundTint">@color/design_default_color_primary</item>
+        <item name="android:paddingStart">4dp</item>
+        <item name="android:paddingEnd">4dp</item>
+        <item name="android:textColor">@color/design_default_color_on_primary</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:maxLines">1</item>
+    </style>
+
+    <style name="seen_right">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginEnd">4dp</item>
+        <item name="android:layout_marginTop">4dp</item>
+        <item name="android:layout_marginBottom">4dp</item>
+        <item name="android:background">@drawable/rounded_corner</item>
+        <item name="android:backgroundTint">@color/teal_200</item>
+        <item name="android:paddingStart">4dp</item>
+        <item name="android:paddingEnd">4dp</item>
+        <item name="android:textColor">@color/black</item>
+        <item name="android:textSize">12sp</item>
+        <item name="android:maxLines">1</item>
+    </style>
+
+    <style name="content_text_wrapper_left">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+
+    <style name="content_text_wrapper_right">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:gravity">end</item>
+    </style>
+
+    <style name="content_text_left">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginStart">4dp</item>
+        <item name="android:layout_marginTop">4dp</item>
+        <item name="android:background">@drawable/rounded_corner</item>
+        <item name="android:backgroundTint">@color/design_default_color_primary</item>
+        <item name="android:padding">4dp</item>
+        <item name="android:textColor">@color/design_default_color_on_primary</item>
+    </style>
+
+    <style name="content_text_right">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginEnd">4dp</item>
+        <item name="android:layout_marginTop">4dp</item>
+        <item name="android:background">@drawable/rounded_corner</item>
+        <item name="android:backgroundTint">@color/teal_200</item>
+        <item name="android:padding">4dp</item>
+        <item name="android:textColor">@color/black</item>
+    </style>
+
+    <style name="content_file_left">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginStart">4dp</item>
+        <item name="android:layout_marginTop">4dp</item>
+        <item name="android:drawableStart">@drawable/ic_baseline_attach_file_24</item>
+        <item name="android:drawableTint">@color/design_default_color_on_primary</item>
+        <item name="android:background">@drawable/rounded_corner</item>
+        <item name="android:backgroundTint">@color/design_default_color_primary</item>
+        <item name="android:padding">4dp</item>
+        <item name="android:textColor">@color/design_default_color_on_primary</item>
+    </style>
+
+    <style name="content_file_right">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginEnd">4dp</item>
+        <item name="android:layout_marginTop">4dp</item>
+        <item name="android:drawableEnd">@drawable/ic_baseline_attach_file_24</item>
+        <item name="android:drawableTint">@color/black</item>
+        <item name="android:background">@drawable/rounded_corner</item>
+        <item name="android:backgroundTint">@color/teal_200</item>
+        <item name="android:padding">4dp</item>
+        <item name="android:textColor">@color/black</item>
+    </style>
+
+    <style name="content_icon_left">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:backgroundTint">@color/design_default_color_primary</item>
+        <item name="fabSize">mini</item>
+        <item name="tint">@color/design_default_color_on_primary</item>
+        <item name="elevation">0dp</item>
+        <item name="borderWidth">0dp</item>
+    </style>
+
+    <style name="content_icon_right">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:backgroundTint">@color/teal_200</item>
+        <item name="fabSize">mini</item>
+        <item name="tint">@color/black</item>
+        <item name="elevation">0dp</item>
+        <item name="borderWidth">0dp</item>
+    </style>
+
+    <style name="content_image_wrapper">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_margin">4dp</item>
+        <item name="cardCornerRadius">8dp</item>
+    </style>
+
+    <style name="content_image">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:adjustViewBounds">true</item>
+        <item name="android:scaleType">fitCenter</item>
+    </style>
+
+    <style name="guideline_left">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="layout_constraintGuide_percent">0.75</item>
+    </style>
+
+    <style name="guideline_right">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="layout_constraintGuide_percent">0.25</item>
+    </style>
+
+    <style name="button_download_left">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:backgroundTint">@color/design_default_color_primary</item>
+        <item name="android:src">@drawable/ic_baseline_file_download_24</item>
+        <item name="fabSize">mini</item>
+        <item name="borderWidth">0dp</item>
+        <item name="tint">@color/design_default_color_on_primary</item>
+    </style>
+
+    <style name="button_download_right">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:backgroundTint">@color/teal_200</item>
+        <item name="android:src">@drawable/ic_baseline_file_download_24</item>
+        <item name="fabSize">mini</item>
+        <item name="borderWidth">0dp</item>
+        <item name="tint">@color/black</item>
+    </style>
+
+    <style name="button_copy_left">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:backgroundTint">@color/design_default_color_primary</item>
+        <item name="android:src">@drawable/ic_baseline_content_copy_24</item>
+        <item name="fabSize">mini</item>
+        <item name="borderWidth">0dp</item>
+        <item name="tint">@color/design_default_color_on_primary</item>
+    </style>
+
+    <style name="button_copy_right">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:backgroundTint">@color/teal_200</item>
+        <item name="android:src">@drawable/ic_baseline_content_copy_24</item>
+        <item name="fabSize">mini</item>
+        <item name="borderWidth">0dp</item>
+        <item name="tint">@color/black</item>
+    </style>
+
+    <style name="content_hidden">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">0dp</item>
+        <item name="android:visibility">gone</item>
+        <item name="android:enabled">false</item>
+    </style>
+
+    <style name="fab">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="fabSize">mini</item>
+        <item name="shapeAppearanceOverlay">@style/square</item>
+        <item name="elevation">0dp</item>
+    </style>
+
+    <style name="system_message">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@drawable/rounded_corner</item>
+        <item name="android:backgroundTint">@android:color/holo_green_dark</item>
+        <item name="android:gravity">center_horizontal</item>
+        <item name="android:padding">4dp</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="maxLines">2</item>
+    </style>
+
+    <style name="button_delete">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:backgroundTint">@color/teal_200</item>
+        <item name="android:src">@drawable/ic_baseline_delete_24</item>
+        <item name="fabSize">mini</item>
+        <item name="borderWidth">0dp</item>
+        <item name="tint">@color/black</item>
+    </style>
+</resources>

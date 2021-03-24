@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/activity_chat_item_text_view_timestamp"
+        style="@style/timestamp_left"
+        app:layout_constraintLeft_toRightOf="@id/activity_chat_item_avatar_wrapper"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/activity_chat_item_text_view_seen"
+        style="@style/seen_left"
+        app:layout_constraintLeft_toRightOf="@id/activity_chat_item_text_view_timestamp"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/activity_chat_item_avatar_wrapper"
+        style="@style/avatar_wrapper_left"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/activity_chat_item_image_view_avatar"
+            style="@style/avatar"
+            android:contentDescription="@string/none" />
+    </com.google.android.material.card.MaterialCardView>
+
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/activity_chat_item_content_text_wrapper"
+        style="@style/content_text_wrapper_left"
+        app:layout_constraintLeft_toRightOf="@id/activity_chat_item_avatar_wrapper"
+        app:layout_constraintRight_toLeftOf="@id/activity_chat_item_left_guideline"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/activity_chat_item_text_view_content"
+            style="@style/content_file_left" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/activity_chat_item_button_download"
+        style="@style/button_download_left"
+        android:contentDescription="@string/none"
+        app:layout_constraintBottom_toBottomOf="@id/activity_chat_item_content_text_wrapper"
+        app:layout_constraintLeft_toRightOf="@id/activity_chat_item_content_text_wrapper" />
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/activity_chat_item_left_guideline"
+        style="@style/guideline_left"
+        android:orientation="vertical" />
+</androidx.constraintlayout.widget.ConstraintLayout>

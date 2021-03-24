@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/menu_chat_item_info"
+        android:icon="@drawable/ic_baseline_info_24"
+        android:title="@string/menu_chat_item_info_title" />
+    <item
+        android:id="@+id/menu_chat_item_leave"
+        android:icon="@drawable/ic_baseline_logout_24"
+        android:title="@string/menu_chat_item_leave_title" />
+</menu>

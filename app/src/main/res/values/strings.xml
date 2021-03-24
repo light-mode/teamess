@@ -1,0 +1,116 @@
+<resources>
+    <string name="app_name">My Application</string>
+
+    <string name="facebook_application_id" translatable="false">265050118545742</string>
+    <string name="facebook_login_protocol_scheme" translatable="false">fb265050118545742</string>
+
+    <string name="activity_sign_in_title">Sign In</string>
+    <string name="activity_sign_in_button_sign_in_text">sign in</string>
+
+    <string name="activity_setting_text_input_layout_app_lock_hint">App Lock</string>
+
+    <string name="activity_user_title">Account Info</string>
+    <string name="activity_user_text_input_layout_username_error_lack">Provide username so people can find you</string>
+    <string name="activity_user_text_input_layout_username_error_min">Your username must contains at least %1$d characters</string>
+    <string name="activity_user_text_input_layout_username_error_max">Your username is too long</string>
+    <string name="activity_user_text_input_layout_username_error_contain_underscore">Your username can not contain _ character</string>
+    <string name="activity_user_text_input_layout_username_hint">Username</string>
+    <string name="activity_user_text_input_layout_dob_hint">DOB</string>
+    <string name="activity_user_text_input_layout_bio_hint">Bio</string>
+    <string name="activity_user_button_save_text_save">save</string>
+    <string name="activity_user_button_save_text_continue">continue</string>
+
+    <string name="dialog_create_credentials_text_view_1_text">To use your fingerprints to unlock your phone or to verify yourself in apps, you\'ll need to:</string>
+    <string name="dialog_create_credentials_text_view_2_text">1. Set a secure screen lock.</string>
+    <string name="dialog_create_credentials_text_view_3_text">2. Add at least 1 fingerprint.</string>
+    <string name="dialog_create_credentials_positive_button_text">OK</string>
+    <string name="dialog_create_credentials_negative_button_text">Cancel</string>
+
+    <string name="activity_group_title_create">Create New Group</string>
+    <string name="activity_group_title_view">Group Info</string>
+    <string name="activity_group_title_edit">Group Info</string>
+    <string name="activity_group_title_add_member">Add New Member</string>
+    <string name="activity_group_title_remove_member">Remove A Member</string>
+
+    <string name="fragment_menu_button_account_text">account</string>
+    <string name="fragment_menu_button_setting_text">setting</string>
+    <string name="fragment_menu_button_logout_text">log out</string>
+
+    <string name="dialog_block_title">Block %1$s?</string>
+    <string name="dialog_block_message">You will no longer receive message from %1$s</string>
+    <string name="dialog_block_positive_button_text">yes</string>
+    <string name="dialog_block_negative_button_text">Cancel</string>
+
+    <string name="dialog_leave_group_title">Leave %1$s?</string>
+    <string name="dialog_leave_group_message">You will no longer receive message from this group</string>
+    <string name="dialog_leave_group_positive_button_text">yes</string>
+    <string name="dialog_leave_group_negative_button_text">Cancel</string>
+
+    <string name="menu_main_item_search_title">Search</string>
+    <string name="menu_main_item_create_group_title">Create Group</string>
+
+    <string name="menu_chat_item_add_member_title">Add New Member</string>
+    <string name="menu_chat_item_remove_member_title">Remove A Member</string>
+    <string name="menu_chat_item_info_title">About</string>
+    <string name="menu_chat_item_leave_title">Leave</string>
+    <string name="menu_chat_item_block_title">Block</string>
+
+    <string name="activity_view_account_title">Account Info</string>
+    <string name="activity_view_account_text_input_layout_username_hint">Username</string>
+    <string name="activity_view_account_button_chat_text">chat</string>
+
+    <string name="fragment_search_text_view_text_default">Your search result will be display here</string>
+    <string name="fragment_search_text_view_text_no_result">No result found</string>
+
+    <string name="activity_chat_edit_text_message_hint">Type a message…</string>
+
+    <string name="activity_group_text_input_layout_group_name_hint">Group Name</string>
+    <string name="activity_group_text_input_layout_group_name_error_lack">You must provide a group name</string>
+    <string name="activity_group_text_input_layout_group_name_error_min">Your group name must contains at least %1$d characters</string>
+    <string name="activity_group_text_input_layout_group_name_error_max">Your group name is too long</string>
+    <string name="activity_group_text_input_layout_group_name_error_contain_underscore">Your group name can not contain _ character</string>
+    <string name="activity_group_text_view_members">Members</string>
+    <string name="activity_group_text_input_layout_members_suggest">Search for other member and add them here</string>
+    <string name="activity_group_button_save_text">save</string>
+
+    <string name="system_message_format_group_created">%1$s created this group</string>
+    <string name="system_message_format_user_added">%1$s added %2$s to this group</string>
+    <string name="system_message_format_user_removed">%1$s removed %2$s from this group</string>
+    <string name="system_message_format_user_left">%1$s has left</string>
+    <string name="system_message_format_group_name_changed">%1$s has changed group name to %2$s</string>
+    <string name="system_message_format_group_avatar_changed">%1$s has changed group avatar</string>
+
+    <string name="user_status_online">online</string>
+    <string name="user_status_offline">offline</string>
+
+    <string name="last_message_system_format">[%1$s] %2$s</string>
+    <string name="last_message_normal_format">[%1$s] %2$s: %3$s</string>
+    <string name="sent_an_icon"><i>[Sent an icon]</i></string>
+    <string name="sent_an_image"><i>[Sent an image]</i></string>
+    <string name="sent_a_file"><i>[Sent a file]</i></string>
+
+    <string name="delivered">Delivered</string>
+    <string name="seen">Seen</string>
+    <string name="seen_by">Seen by</string>
+    <string name="seen_by_everyone">Seen by everyone</string>
+
+    <string name="fragment_group_add_member_message">%1$s will be add to this group</string>
+    <string name="fragment_group_remove_member_message">%1$s will be remove from this group</string>
+
+    <string name="update_success">Information updated successfully</string>
+
+    <string name="error_select_existed_member">User already selected</string>
+    <string name="error_upload_file_unknown">Selected file is not supported</string>
+    <string name="error_upload_file_limit">You can only upload file which is less than 15MB</string>
+    <string name="error_invalid_dob">Please select a valid dob</string>
+
+    <string name="dialog_logout_title">Are you sure you want to logout?</string>
+    <string name="dialog_logout_positive_button_text">log out</string>
+    <string name="dialog_logout_negative_button_text">Cancel</string>
+
+    <string name="default_message_deleted"><i>This message has been deleted</i></string>
+    <string name="copied_to_clipboard">Copied to clipboard</string>
+    <string name="dob_format">%1$d-%2$d-%3$d</string>
+
+    <string name="none">none</string>
+</resources>

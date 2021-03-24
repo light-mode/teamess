@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/activity_chat_action_bar_card_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:cardPreventCornerOverlap="false"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:shapeAppearanceOverlay="@style/circle">
+
+        <ImageView
+            android:id="@+id/activity_chat_action_bar_image_view_avatar"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:contentDescription="@string/none" />
+    </com.google.android.material.card.MaterialCardView>
+
+    <LinearLayout
+        android:id="@+id/activity_chat_action_bar_linear_layout"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="8dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="@id/activity_chat_action_bar_card_view"
+        app:layout_constraintLeft_toRightOf="@id/activity_chat_action_bar_card_view"
+        app:layout_constraintRight_toLeftOf="@id/activity_chat_action_bar_image_view_more"
+        app:layout_constraintTop_toTopOf="@id/activity_chat_action_bar_card_view">
+
+        <TextView
+            android:id="@+id/activity_chat_action_bar_text_view_chat_name"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:gravity="bottom"
+            android:maxLines="1"
+            android:textColor="@color/white" />
+
+        <TextView
+            android:id="@+id/activity_chat_action_bar_text_view_status"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:gravity="top"
+            android:maxLines="1" />
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/activity_chat_action_bar_image_view_more"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:contentDescription="@string/none"
+        android:src="@drawable/ic_baseline_more_vert_24"
+        app:layout_constraintBottom_toBottomOf="@id/activity_chat_action_bar_card_view"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toTopOf="@id/activity_chat_action_bar_card_view"
+        app:tint="@color/white" />
+</androidx.constraintlayout.widget.ConstraintLayout>
