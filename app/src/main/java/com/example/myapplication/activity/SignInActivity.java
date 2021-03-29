@@ -1,16 +1,23 @@
 package com.example.myapplication.activity;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
 
 import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.preference.PreferenceManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myapplication.R;
+import com.example.myapplication.adapter.LanguageAdapter;
+import com.example.myapplication.adapter.SearchResultAdapter;
+import com.example.myapplication.pojo.Language;
 import com.example.myapplication.utilities.Constants;
 import com.example.myapplication.utilities.Utils;
 import com.firebase.ui.auth.AuthUI;
@@ -19,29 +26,58 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentSnapshot;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class SignInActivity extends AppCompatActivity {
+public class SignInActivity extends AppCompatActivity implements LanguageAdapter.OnItemClickListener {
     public static final String TAG = "SignInActivity";
 
-    private Button mSignInButton;
+    private Button mContinueButton;
+
     private ActivityResultLauncher<Intent> mSignInLauncher;
+    private final SharedPreferences.OnSharedPreferenceChangeListener listener = (sharedPreferences, key) -> {
+        if (getString(R.string.pref_language_key).equals(key)) {
+            recreate();
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        PreferenceManager.getDefaultSharedPreferences(this)
+                .registerOnSharedPreferenceChangeListener(listener);
+        Utils.setLocale(this);
+        setTitle(R.string.activity_sign_in_title);
         setContentView(R.layout.activity_sign_in);
-        setTitle(getString(R.string.activity_sign_in_title));
-        mSignInButton = findViewById(R.id.activity_sign_in_button_sign_in);
-        mSignInButton.setOnClickListener(v -> onSignInButtonClick());
+
+        List<Language> languages = new ArrayList<>();
+        String[] languageCodes = getResources().getStringArray(R.array.language_codes);
+        String[] languageNames = getResources().getStringArray(R.array.language_names);
+        for (int index = 0; index < languageCodes.length; index++) {
+            Language language = new Language(languageCodes[index], languageNames[index]);
+            languages.add(language);
+        }
+
+        RecyclerView mRecyclerView = findViewById(R.id.activity_sign_in_recycler_view);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        mRecyclerView.setAdapter(new LanguageAdapter(this, languages, this));
+        mContinueButton = findViewById(R.id.activity_sign_in_button_continue);
+        mContinueButton.setOnClickListener(v -> onContinueButtonClick());
         mSignInLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 this::onSignInIntentReturn);
     }
 
-    private void onSignInButtonClick() {
-        mSignInButton.setVisibility(View.INVISIBLE);
+    @Override
+    public void onItemClick(String code) {
+        SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(this).edit();
+        editor.putString(getString(R.string.pref_language_key), code);
+        editor.apply();
+    }
+
+    private void onContinueButtonClick() {
+        mContinueButton.setEnabled(false);
         List<AuthUI.IdpConfig> providers = Arrays.asList(
                 new AuthUI.IdpConfig.PhoneBuilder().build(),
                 new AuthUI.IdpConfig.GoogleBuilder().build(),
@@ -54,7 +90,7 @@ public class SignInActivity extends AppCompatActivity {
         mSignInLauncher.launch(intent);
     }
 
-    private void onSignInIntentReturn(ActivityResult result) {
+    private void onSignInIntentReturn(@NonNull ActivityResult result) {
         if (result.getResultCode() == RESULT_OK) {
             FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
             if (currentUser == null) {
@@ -63,11 +99,11 @@ public class SignInActivity extends AppCompatActivity {
             Utils.getUsersRef().document(currentUser.getUid()).get()
                     .addOnCompleteListener(this::onGetUsersDocumentComplete);
         } else {
-            mSignInButton.setVisibility(View.VISIBLE);
+            mContinueButton.setEnabled(true);
         }
     }
 
-    private void onGetUsersDocumentComplete(Task<DocumentSnapshot> task) {
+    private void onGetUsersDocumentComplete(@NonNull Task<DocumentSnapshot> task) {
         if (!task.isSuccessful() || task.getResult() == null) {
             Utils.logTaskException(TAG, task);
             return;

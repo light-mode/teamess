@@ -20,6 +20,7 @@ public class Constants {
     public static final String FIELD_MEMBERS_UID = "membersUid";
     public static final String FIELD_DELETED = "deleted";
     public static final String FIELD_CREATOR_UID = "creatorUid";
+    public static final String FIELD_BLOCKER_UID = "blockerUid";
     public static final String FIELD_AVATAR_TIMESTAMP = "avatarTimestamp";
     public static final String FIELD_LAST_MESSAGE_DELETED = "lastMessageDeleted";
 
@@ -32,11 +33,11 @@ public class Constants {
     public static final String KEY_MODE = "KEY_MODE";
     public static final String KEY_CHAT_ID = "KEY_CHAT_ID";
     public static final String KEY_OTHERS_USERNAME = "KEY_OTHERS_USERNAME";
-    public static final String KEY_APP_LOCK_REQUIRED = "KEY_APP_LOCK_REQUIRED";
 
     public static final String EXTRA_MODE = "EXTRA_MODE";
     public static final String EXTRA_IMAGE = "EXTRA_IMAGE";
     public static final String EXTRA_CHAT_ID = "EXTRA_CHAT_ID";
+    public static final String EXTRA_IMAGE_ID = "EXTRA_IMAGE_ID";
     public static final String EXTRA_CHAT_TYPE = "EXTRA_CHAT_TYPE";
     public static final String EXTRA_OTHER_UID = "EXTRA_OTHER_UID";
     public static final String EXTRA_AUTHENTICATED = "EXTRA_AUTHENTICATED";
@@ -49,9 +50,8 @@ public class Constants {
     public static final String CHAT_TYPE_SINGLE = "single";
     public static final String CHAT_TYPE_GROUP = "group";
 
-    public static final int TAB_POSITION_HOME = 0;
-    public static final int TAB_POSITION_CHAT = 1;
-    public static final int TAB_POSITION_MENU = 2;
+    public static final int TAB_POSITION_CHAT = 0;
+    public static final int TAB_POSITION_MENU = 1;
 
     public static final int NAME_LENGTH_MIN = 5;
     public static final int NAME_LENGTH_MAX = 50;
@@ -71,6 +71,8 @@ public class Constants {
     public static final String GROUP_CREATED = "_CREATE_GROUP_";
     public static final String GROUP_NAME_CHANGED = "_CHANGE_GROUP_NAME_TO_";
     public static final String GROUP_AVATAR_CHANGED = "_CHANGE_GROUP_AVATAR";
+    public static final String BLOCKED = "_BLOCKED_";
+    public static final String UNBLOCKED = "_UNBLOCKED_";
 
     public static final int ICON_VERY_DISSATISFIED = 0;
     public static final int ICON_DISSATISFIED = 1;
@@ -78,4 +80,6 @@ public class Constants {
     public static final int ICON_SATISFIED = 3;
     public static final int ICON_SATISFIED_ALT = 4;
     public static final int ICON_VERY_SATISFIED = 5;
+
+    public static final String DOB_SEPARATOR = "-";
 }

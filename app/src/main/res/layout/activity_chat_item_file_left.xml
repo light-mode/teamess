@@ -7,7 +7,7 @@
     <TextView
         android:id="@+id/activity_chat_item_text_view_timestamp"
         style="@style/timestamp_left"
-        app:layout_constraintLeft_toRightOf="@id/activity_chat_item_avatar_wrapper"
+        app:layout_constraintLeft_toLeftOf="@id/activity_chat_item_content_text_wrapper"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
@@ -20,7 +20,7 @@
         android:id="@+id/activity_chat_item_avatar_wrapper"
         style="@style/avatar_wrapper_left"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="@id/activity_chat_item_content_text_wrapper">
 
         <ImageView
             android:id="@+id/activity_chat_item_image_view_avatar"
@@ -28,25 +28,24 @@
             android:contentDescription="@string/none" />
     </com.google.android.material.card.MaterialCardView>
 
-
-    <com.google.android.material.textfield.TextInputLayout
+    <FrameLayout
         android:id="@+id/activity_chat_item_content_text_wrapper"
         style="@style/content_text_wrapper_left"
         app:layout_constraintLeft_toRightOf="@id/activity_chat_item_avatar_wrapper"
         app:layout_constraintRight_toLeftOf="@id/activity_chat_item_left_guideline"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toBottomOf="@id/activity_chat_item_text_view_timestamp">
 
         <TextView
             android:id="@+id/activity_chat_item_text_view_content"
             style="@style/content_file_left" />
-    </com.google.android.material.textfield.TextInputLayout>
+    </FrameLayout>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/activity_chat_item_button_download"
         style="@style/button_download_left"
         android:contentDescription="@string/none"
-        app:layout_constraintBottom_toBottomOf="@id/activity_chat_item_content_text_wrapper"
-        app:layout_constraintLeft_toRightOf="@id/activity_chat_item_content_text_wrapper" />
+        app:layout_constraintLeft_toRightOf="@id/activity_chat_item_content_text_wrapper"
+        app:layout_constraintTop_toTopOf="@id/activity_chat_item_content_text_wrapper" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/activity_chat_item_left_guideline"

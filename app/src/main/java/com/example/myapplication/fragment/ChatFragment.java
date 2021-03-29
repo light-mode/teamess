@@ -7,6 +7,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -37,15 +39,19 @@ public class ChatFragment extends Fragment implements ChatAdapter.OnItemClickLis
     public static final String TAG = "ChatFragment";
 
     private ChatAdapter mChatAdapter;
-
     private final String mCurrentUid;
     private final Map<String, String> mOthersUsername;
     private final List<UsersChatsDocument> mUsersChatsDocuments;
+    private final ActivityResultLauncher<Intent> mActivityLauncher;
 
     public ChatFragment() {
         mCurrentUid = Utils.getCurrentUid();
         mOthersUsername = new HashMap<>();
         mUsersChatsDocuments = new ArrayList<>();
+        mActivityLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                });
     }
 
     @Nullable
@@ -88,7 +94,7 @@ public class ChatFragment extends Fragment implements ChatAdapter.OnItemClickLis
         });
     }
 
-    private void addSingleUsersChatsListener(UsersChatsDocument usersChatsDocument, DocumentChange documentChange) {
+    private void addSingleUsersChatsListener(@NonNull UsersChatsDocument usersChatsDocument, DocumentChange documentChange) {
         String otherUid = usersChatsDocument.getOtherUid();
         Utils.getUsersRef().document(otherUid).get().addOnCompleteListener(task -> {
             if (!task.isSuccessful() || task.getResult() == null) {
@@ -102,7 +108,7 @@ public class ChatFragment extends Fragment implements ChatAdapter.OnItemClickLis
         });
     }
 
-    private void addGroupUsersChatsListener(UsersChatsDocument usersChatsDocument, DocumentChange documentChange) {
+    private void addGroupUsersChatsListener(@NonNull UsersChatsDocument usersChatsDocument, DocumentChange documentChange) {
         String chatId = usersChatsDocument.getId();
         Utils.getChatsRef().document(chatId).get().addOnCompleteListener(task -> {
             if (!task.isSuccessful() || task.getResult() == null) {
@@ -139,7 +145,7 @@ public class ChatFragment extends Fragment implements ChatAdapter.OnItemClickLis
         });
     }
 
-    private void onUsersChatsDocumentChanged(UsersChatsDocument usersChatsDocument, DocumentChange documentChange) {
+    private void onUsersChatsDocumentChanged(UsersChatsDocument usersChatsDocument, @NonNull DocumentChange documentChange) {
         switch (documentChange.getType()) {
             case ADDED:
                 onUsersChatsDocumentAdded(usersChatsDocument);
@@ -178,10 +184,11 @@ public class ChatFragment extends Fragment implements ChatAdapter.OnItemClickLis
     @Override
     public void onItemClick(String chatId, String chatType, String otherUid) {
         Intent intent = new Intent(getActivity(), ChatActivity.class);
+        intent.putExtra(Constants.EXTRA_AUTHENTICATED, true);
         intent.putExtra(Constants.EXTRA_CHAT_ID, chatId);
         intent.putExtra(Constants.EXTRA_CHAT_TYPE, chatType);
         intent.putExtra(Constants.EXTRA_OTHER_UID, otherUid);
         intent.putExtra(Constants.EXTRA_OTHERS_USERNAME, (Serializable) mOthersUsername);
-        startActivity(intent);
+        mActivityLauncher.launch(intent);
     }
 }

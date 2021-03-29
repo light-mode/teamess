@@ -1,19 +1,19 @@
 <resources>
-    <string name="app_name">My Application</string>
+    <string name="app_name" translatable="false">TeaMess</string>
 
-    <string name="facebook_application_id" translatable="false">265050118545742</string>
-    <string name="facebook_login_protocol_scheme" translatable="false">fb265050118545742</string>
+    <string name="activity_sign_in_title">Select language</string>
+    <string name="activity_sign_in_button_continue_text">continue</string>
 
-    <string name="activity_sign_in_title">Sign In</string>
-    <string name="activity_sign_in_button_sign_in_text">sign in</string>
+    <string name="biometric_prompt_title">App Lock</string>
+    <string name="biometric_prompt_subtitle_fingerprint">Enter your password or confirm fingerprint to continue</string>
+    <string name="biometric_prompt_subtitle">Enter your password to continue</string>
 
-    <string name="activity_setting_text_input_layout_app_lock_hint">App Lock</string>
+    <string name="activity_setting_title">Setting</string>
 
     <string name="activity_user_title">Account Info</string>
-    <string name="activity_user_text_input_layout_username_error_lack">Provide username so people can find you</string>
+    <string name="activity_user_text_input_layout_username_error_lack">Provide username so your friends can find you</string>
     <string name="activity_user_text_input_layout_username_error_min">Your username must contains at least %1$d characters</string>
     <string name="activity_user_text_input_layout_username_error_max">Your username is too long</string>
-    <string name="activity_user_text_input_layout_username_error_contain_underscore">Your username can not contain _ character</string>
     <string name="activity_user_text_input_layout_username_hint">Username</string>
     <string name="activity_user_text_input_layout_dob_hint">DOB</string>
     <string name="activity_user_text_input_layout_bio_hint">Bio</string>
@@ -23,7 +23,7 @@
     <string name="dialog_create_credentials_text_view_1_text">To use your fingerprints to unlock your phone or to verify yourself in apps, you\'ll need to:</string>
     <string name="dialog_create_credentials_text_view_2_text">1. Set a secure screen lock.</string>
     <string name="dialog_create_credentials_text_view_3_text">2. Add at least 1 fingerprint.</string>
-    <string name="dialog_create_credentials_positive_button_text">OK</string>
+    <string name="dialog_create_credentials_positive_button_text">Continue</string>
     <string name="dialog_create_credentials_negative_button_text">Cancel</string>
 
     <string name="activity_group_title_create">Create New Group</string>
@@ -38,13 +38,23 @@
 
     <string name="dialog_block_title">Block %1$s?</string>
     <string name="dialog_block_message">You will no longer receive message from %1$s</string>
-    <string name="dialog_block_positive_button_text">yes</string>
+    <string name="dialog_block_positive_button_text">block</string>
     <string name="dialog_block_negative_button_text">Cancel</string>
+
+    <string name="dialog_unblock_title">Unblock %1$s?</string>
+    <string name="dialog_unblock_message">You will start receive message from %1$s</string>
+    <string name="dialog_unblock_positive_button_text">unblock</string>
+    <string name="dialog_unblock_negative_button_text">Cancel</string>
 
     <string name="dialog_leave_group_title">Leave %1$s?</string>
     <string name="dialog_leave_group_message">You will no longer receive message from this group</string>
-    <string name="dialog_leave_group_positive_button_text">yes</string>
+    <string name="dialog_leave_group_positive_button_text">leave</string>
     <string name="dialog_leave_group_negative_button_text">Cancel</string>
+
+    <string name="dialog_delete_message_title">Delete message?</string>
+    <string name="dialog_delete_message_message">This action cannot be undone</string>
+    <string name="dialog_delete_message_positive_button_text">delete</string>
+    <string name="dialog_delete_message_negative_button_text">Cancel</string>
 
     <string name="menu_main_item_search_title">Search</string>
     <string name="menu_main_item_create_group_title">Create Group</string>
@@ -54,6 +64,7 @@
     <string name="menu_chat_item_info_title">About</string>
     <string name="menu_chat_item_leave_title">Leave</string>
     <string name="menu_chat_item_block_title">Block</string>
+    <string name="menu_chat_item_unblock_title">Unblock</string>
 
     <string name="activity_view_account_title">Account Info</string>
     <string name="activity_view_account_text_input_layout_username_hint">Username</string>
@@ -70,7 +81,7 @@
     <string name="activity_group_text_input_layout_group_name_error_max">Your group name is too long</string>
     <string name="activity_group_text_input_layout_group_name_error_contain_underscore">Your group name can not contain _ character</string>
     <string name="activity_group_text_view_members">Members</string>
-    <string name="activity_group_text_input_layout_members_suggest">Search for other member and add them here</string>
+    <string name="activity_group_text_input_layout_members_suggest">Search for new member and add them here</string>
     <string name="activity_group_button_save_text">save</string>
 
     <string name="system_message_format_group_created">%1$s created this group</string>
@@ -79,12 +90,14 @@
     <string name="system_message_format_user_left">%1$s has left</string>
     <string name="system_message_format_group_name_changed">%1$s has changed group name to %2$s</string>
     <string name="system_message_format_group_avatar_changed">%1$s has changed group avatar</string>
+    <string name="system_message_format_blocked">%1$s has blocked %2$s</string>
+    <string name="system_message_format_unblocked">%1$s has unblocked %2$s</string>
 
-    <string name="user_status_online">online</string>
-    <string name="user_status_offline">offline</string>
+    <string name="user_status_online" translatable="false">online</string>
+    <string name="user_status_offline" translatable="false">offline</string>
 
-    <string name="last_message_system_format">[%1$s] %2$s</string>
-    <string name="last_message_normal_format">[%1$s] %2$s: %3$s</string>
+    <string name="last_message_system_format" translatable="false">[%1$s] %2$s</string>
+    <string name="last_message_normal_format" translatable="false">[%1$s] %2$s: %3$s</string>
     <string name="sent_an_icon"><i>[Sent an icon]</i></string>
     <string name="sent_an_image"><i>[Sent an image]</i></string>
     <string name="sent_a_file"><i>[Sent a file]</i></string>
@@ -99,18 +112,41 @@
 
     <string name="update_success">Information updated successfully</string>
 
-    <string name="error_select_existed_member">User already selected</string>
+    <string name="error_select_existed_member">Please select another user</string>
     <string name="error_upload_file_unknown">Selected file is not supported</string>
     <string name="error_upload_file_limit">You can only upload file which is less than 15MB</string>
-    <string name="error_invalid_dob">Please select a valid dob</string>
+    <string name="error_invalid_dob">Selected date is not valid</string>
 
     <string name="dialog_logout_title">Are you sure you want to logout?</string>
     <string name="dialog_logout_positive_button_text">log out</string>
     <string name="dialog_logout_negative_button_text">Cancel</string>
 
+    <string name="you">you</string>
+    <string name="you_capital">You</string>
     <string name="default_message_deleted"><i>This message has been deleted</i></string>
     <string name="copied_to_clipboard">Copied to clipboard</string>
-    <string name="dob_format">%1$d-%2$d-%3$d</string>
+    <string name="dob_format" translatable="false">%1$d-%2$d-%3$d</string>
 
-    <string name="none">none</string>
+    <string name="pref_username_set" translatable="false">username_set</string>
+
+    <string name="pref_app_lock_title">App Lock</string>
+    <string name="pref_app_lock_key" translatable="false">app_lock</string>
+    <string name="pref_app_lock_summary_on" translatable="false">On</string>
+    <string name="pref_app_lock_summary_off" translatable="false">Off</string>
+
+    <string name="pref_language_title">Language</string>
+    <string name="pref_language_dialog_title">Change language</string>
+    <string name="pref_language_key" translatable="false">language</string>
+    <string name="pref_language_code_english" translatable="false">en</string>
+    <string name="pref_language_code_vietnamese" translatable="false">vn</string>
+    <string name="pref_language_name_english" translatable="false">English</string>
+    <string name="pref_language_name_vietnamese" translatable="false">Tiếng Việt</string>
+    <string name="pref_language_button_negative_text">Cancel</string>
+
+    <string name="pref_24_hour_format_title">Use 24-hour format</string>
+    <string name="pref_24_hour_format_key" translatable="false">24_hour_format</string>
+    <string name="pref_24_hour_format_summary_on" translatable="false">13:00</string>
+    <string name="pref_24_hour_format_summary_off" translatable="false">01:00 PM</string>
+
+    <string name="none" translatable="false">none</string>
 </resources>

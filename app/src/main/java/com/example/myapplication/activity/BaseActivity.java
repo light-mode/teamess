@@ -2,6 +2,7 @@ package com.example.myapplication.activity;
 
 import android.app.Dialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.view.View;
@@ -17,7 +18,9 @@ import androidx.biometric.BiometricPrompt;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.Lifecycle;
+import androidx.preference.PreferenceManager;
 
+import com.example.myapplication.R;
 import com.example.myapplication.dialog.CreateCredentialsDialog;
 import com.example.myapplication.utilities.Constants;
 import com.example.myapplication.utilities.Utils;
@@ -27,10 +30,18 @@ import java.util.concurrent.Executor;
 public abstract class BaseActivity extends AppCompatActivity implements CreateCredentialsDialog.Interface {
     private static boolean sAuthenticated;
     private ActivityResultLauncher<Intent> mSecuritySettingsLauncher;
+    private final SharedPreferences.OnSharedPreferenceChangeListener listener = (sharedPreferences, key) -> {
+        if (getString(R.string.pref_language_key).equals(key) || getString(R.string.pref_24_hour_format_key).equals(key)) {
+            getCurrentActivity().recreate();
+        }
+    };
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        PreferenceManager.getDefaultSharedPreferences(this)
+                .registerOnSharedPreferenceChangeListener(listener);
+        Utils.setLocale(this);
         mSecuritySettingsLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
             if (Utils.isAuthenticateAvailable(getApplicationContext())) {
                 promptUserToLogin();
@@ -60,19 +71,19 @@ public abstract class BaseActivity extends AppCompatActivity implements CreateCr
     protected void onPause() {
         super.onPause();
         getCurrentRootLayout().setVisibility(View.INVISIBLE);
-        Utils.updateUsersDocumentStatus(Constants.STATUS_OFFLINE);
+        Utils.updateCurrentUsersDocumentStatus(Constants.STATUS_OFFLINE);
         sAuthenticated = false;
     }
 
     private void checkAuthenticated() {
         boolean authenticated = sAuthenticated && Utils.isAuthenticateAvailable(this);
-        boolean passwordRequired = Utils.isPasswordRequired(this);
-        if (!authenticated && passwordRequired) {
+        boolean appLockRequired = Utils.isAppLockRequired(this);
+        if (!authenticated && appLockRequired) {
             getCurrentRootLayout().setVisibility(View.INVISIBLE);
             authenticate();
         } else {
             getCurrentRootLayout().setVisibility(View.VISIBLE);
-            Utils.updateUsersDocumentStatus(Constants.STATUS_ONLINE);
+            Utils.updateCurrentUsersDocumentStatus(Constants.STATUS_ONLINE);
         }
     }
 
@@ -115,10 +126,10 @@ public abstract class BaseActivity extends AppCompatActivity implements CreateCr
             }
         });
         BiometricPrompt.PromptInfo promptInfo = new BiometricPrompt.PromptInfo.Builder()
-                .setTitle("App Lock")
+                .setTitle(getString(R.string.pref_app_lock_title))
                 .setSubtitle(Utils.isAuthenticateUsingBiometricAvailable(this)
-                        ? "Enter your password or confirm fingerprint to continue"
-                        : "Enter your password to continue")
+                        ? getString(R.string.biometric_prompt_subtitle_fingerprint)
+                        : getString(R.string.biometric_prompt_subtitle))
                 .setAllowedAuthenticators(Constants.ALLOWED_AUTHENTICATORS)
                 .build();
         biometricPrompt.authenticate(promptInfo);
@@ -138,7 +149,6 @@ public abstract class BaseActivity extends AppCompatActivity implements CreateCr
             switch (dialogButtonValue) {
                 case Dialog.BUTTON_POSITIVE:
                     Intent intent = new Intent(Settings.ACTION_SECURITY_SETTINGS);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     mSecuritySettingsLauncher.launch(intent);
                     break;
                 case Dialog.BUTTON_NEGATIVE:

@@ -12,6 +12,7 @@ import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -61,6 +62,7 @@ import com.google.firebase.storage.StorageReference;
 import java.io.ByteArrayOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -90,13 +92,15 @@ public class ChatActivity extends BaseActivity implements MessageAdapter.OnClick
     private final String mCurrentUid;
     private final Map<String, String> mOthersStatus;
     private final ActivityResultLauncher<Intent> mCameraLauncher;
+    private final ActivityResultLauncher<Intent> mActivityLauncher;
     private final ActivityResultLauncher<Intent> mFileChooserLauncher;
     private final List<ChatsMessagesDocument> mChatsMessagesDocuments;
 
-    public String mChatId;
-    public String mChatType;
-    public String mChatName;
+    private String mChatId;
+    private String mChatType;
+    private String mChatName;
     private String mOtherUid;
+    private String mBlockerUid;
     private String mChatCreatorUid;
     private String mAvatarTimestamp;
     private List<String> mMembersUid;
@@ -115,6 +119,10 @@ public class ChatActivity extends BaseActivity implements MessageAdapter.OnClick
         mFileChooserLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 this::onRequestOpenFileChooserReturn);
+        mActivityLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                });
     }
 
     @Override
@@ -127,10 +135,11 @@ public class ChatActivity extends BaseActivity implements MessageAdapter.OnClick
         setListener();
         switch (mChatType) {
             case Constants.CHAT_TYPE_SINGLE:
-                addSingleChatsDocumentListener();
+                addSingleUserStatusListener();
                 if (mChatId == null) {
                     addUsersChatsListener();
                 } else {
+                    addSingleChatsDocumentListener();
                     addChatsMessagesListener();
                 }
                 break;
@@ -211,6 +220,18 @@ public class ChatActivity extends BaseActivity implements MessageAdapter.OnClick
         mRecyclerView.setLayoutManager(layoutManager);
         mMessageAdapter = new MessageAdapter(this, mChatId, mChatType, mChatsMessagesDocuments, mOthersUsername, this);
         mRecyclerView.setAdapter(mMessageAdapter);
+        mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+            }
+
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                mMessageAdapter.hideDisplayingSecondaryView();
+            }
+        });
     }
 
     private void setListener() {
@@ -274,6 +295,7 @@ public class ChatActivity extends BaseActivity implements MessageAdapter.OnClick
                     boolean sameOtherUser = mOtherUid.equals(usersChatsDocument.getOtherUid());
                     if (singleChatType && sameOtherUser) {
                         mChatId = queryDocumentSnapshot.getId();
+                        addSingleChatsDocumentListener();
                         addChatsMessagesListener();
                     }
                 }
@@ -282,7 +304,26 @@ public class ChatActivity extends BaseActivity implements MessageAdapter.OnClick
     }
 
     private void addSingleChatsDocumentListener() {
-        Utils.getUsersRef().document(mOtherUid).addSnapshotListener(this, (value, error) -> {
+        Utils.getChatsRef().document(mChatId).addSnapshotListener((value, error) -> {
+            if (value == null) {
+                Log.e(TAG, error == null ? "" : error.getMessage());
+                return;
+            }
+            ChatsDocument chatsDocument = value.toObject(ChatsDocument.class);
+            assert chatsDocument != null;
+            String blockerUid = chatsDocument.getBlockerUid();
+            if (blockerUid == null) {
+                mBlockerUid = null;
+                setButtonEnabled(true);
+            } else {
+                mBlockerUid = blockerUid;
+                setButtonEnabled(false);
+            }
+        });
+    }
+
+    private void addSingleUserStatusListener() {
+        Utils.getUsersRef().document(mOtherUid).addSnapshotListener((value, error) -> {
             if (value == null) {
                 Log.e(TAG, error == null ? "" : error.getMessage());
                 return;
@@ -293,7 +334,24 @@ public class ChatActivity extends BaseActivity implements MessageAdapter.OnClick
         });
     }
 
+    private void setButtonEnabled(boolean enabled) {
+        mUploadFileButton.setEnabled(enabled);
+        mCameraButton.setEnabled(enabled);
+        mAddReactionButton.setEnabled(enabled);
+        mVerySatisfiedButton.setEnabled(enabled);
+        mSatisfiedAltButton.setEnabled(enabled);
+        mSatisfiedButton.setEnabled(enabled);
+        mNeutralButton.setEnabled(enabled);
+        mDissatisfiedButton.setEnabled(enabled);
+        mVeryDissatisfiedButton.setEnabled(enabled);
+        mSendButton.setEnabled(enabled);
+        mMessageEditText.setEnabled(enabled);
+    }
+
     private void onRequestOpenCameraReturn(@NonNull ActivityResult result) {
+        if (mBlockerUid != null) {
+            return;
+        }
         Intent intent = result.getData();
         if (result.getResultCode() != RESULT_OK || intent == null || intent.getExtras() == null) {
             return;
@@ -322,6 +380,9 @@ public class ChatActivity extends BaseActivity implements MessageAdapter.OnClick
     }
 
     private void onRequestOpenFileChooserReturn(@NonNull ActivityResult result) {
+        if (mBlockerUid != null) {
+            return;
+        }
         Intent intent = result.getData();
         if (result.getResultCode() == RESULT_CANCELED || intent == null || intent.getData() == null) {
             return;
@@ -385,7 +446,7 @@ public class ChatActivity extends BaseActivity implements MessageAdapter.OnClick
             String avatarTimestamp = Objects.requireNonNull(value.get(Constants.FIELD_AVATAR_TIMESTAMP)).toString();
             if (!avatarTimestamp.equals(mAvatarTimestamp)) {
                 mAvatarTimestamp = avatarTimestamp;
-                Glide.with(this).load(Utils.getChatsAvatarRef(mChatId))
+                Glide.with(getApplicationContext()).load(Utils.getChatsAvatarRef(mChatId))
                         .error(R.drawable.ic_baseline_group_24)
                         .skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE)
                         .into(mAvatarImageView);
@@ -396,21 +457,23 @@ public class ChatActivity extends BaseActivity implements MessageAdapter.OnClick
             }
             if (mMembersUid == null || mMembersUid.size() < membersUid.size()) {
                 mMembersUid = membersUid;
-                addUsersStatusListener();
+                mMessageAdapter.memberCount = membersUid.size();
+                addGroupUsersStatusListener();
             } else if (mMembersUid.size() > membersUid.size()) {
                 mMembersUid.removeAll(membersUid);
-                String removedUid = membersUid.get(0);
+                String removedUid = mMembersUid.get(0);
                 if (removedUid.equals(mCurrentUid)) {
                     finish();
                 } else {
                     mMembersUid = membersUid;
-                    addUsersStatusListener();
+                    mMessageAdapter.memberCount = membersUid.size();
+                    addGroupUsersStatusListener();
                 }
             }
         });
     }
 
-    private void addUsersStatusListener() {
+    private void addGroupUsersStatusListener() {
         mOthersStatus.clear();
         for (String uid : mMembersUid) {
             if (uid.equals(mCurrentUid)) {
@@ -552,7 +615,7 @@ public class ChatActivity extends BaseActivity implements MessageAdapter.OnClick
     }
 
     private void onSendButtonClick() {
-        String content = mMessageEditText.getText().toString();
+        String content = mMessageEditText.getText().toString().trim();
         if (content.isEmpty()) {
             return;
         }
@@ -636,7 +699,7 @@ public class ChatActivity extends BaseActivity implements MessageAdapter.OnClick
         });
     }
 
-    private void setupForNewMessage(String type) {
+    private void setupForNewMessage(@NonNull String type) {
         switch (type) {
             case Constants.MESSAGE_TYPE_TEXT:
                 mMessageEditText.setText("");
@@ -664,14 +727,16 @@ public class ChatActivity extends BaseActivity implements MessageAdapter.OnClick
     }
 
     @Override
-    public void onImageContentClick(String imageId, Drawable image) {
+    public void onFullscreenButtonClick(String imageId, Drawable image) {
         Bitmap bitmap = ((BitmapDrawable) image).getBitmap();
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, stream);
         byte[] bytes = stream.toByteArray();
         Intent intent = new Intent(this, ViewImageActivity.class);
+        intent.putExtra(Constants.EXTRA_AUTHENTICATED, true);
         intent.putExtra(Constants.EXTRA_IMAGE, bytes);
-        startActivity(intent);
+        intent.putExtra(Constants.EXTRA_IMAGE_ID, imageId);
+        mActivityLauncher.launch(intent);
     }
 
     @Override
@@ -690,28 +755,35 @@ public class ChatActivity extends BaseActivity implements MessageAdapter.OnClick
 
     @Override
     public void onDeleteButtonClick(@NonNull ChatsMessagesDocument chatsMessagesDocument) {
-        WriteBatch batch = FirebaseFirestore.getInstance().batch();
-        String messageId = chatsMessagesDocument.getId();
-        batch.update(Utils.getChatsMessagesRef(mChatId).document(messageId), Constants.FIELD_DELETED, true);
-        String lastMessageId = mChatsMessagesDocuments.get(mChatsMessagesDocuments.size() - 1).getId();
-        if (!messageId.equals(lastMessageId)) {
+        AlertDialog.Builder deleteDialog = new AlertDialog.Builder(this);
+        deleteDialog.setTitle(getString(R.string.dialog_delete_message_title));
+        deleteDialog.setMessage(getString(R.string.dialog_delete_message_message));
+        deleteDialog.setPositiveButton(getString(R.string.dialog_delete_message_positive_button_text), (dialog, which) -> {
+            WriteBatch batch = FirebaseFirestore.getInstance().batch();
+            String messageId = chatsMessagesDocument.getId();
+            batch.update(Utils.getChatsMessagesRef(mChatId).document(messageId), Constants.FIELD_DELETED, true);
+            String lastMessageId = mChatsMessagesDocuments.get(mChatsMessagesDocuments.size() - 1).getId();
+            if (!messageId.equals(lastMessageId)) {
+                batch.commit();
+                return;
+            }
+            switch (mChatType) {
+                case Constants.CHAT_TYPE_SINGLE:
+                    batch.update(Utils.getUsersChatsRef(mCurrentUid).document(mChatId), Constants.FIELD_LAST_MESSAGE_DELETED, true);
+                    batch.update(Utils.getUsersChatsRef(mOtherUid).document(mChatId), Constants.FIELD_LAST_MESSAGE_DELETED, true);
+                    break;
+                case Constants.CHAT_TYPE_GROUP:
+                    for (String uid : mMembersUid) {
+                        batch.update(Utils.getUsersChatsRef(uid).document(mChatId), Constants.FIELD_LAST_MESSAGE_DELETED, true);
+                    }
+                    break;
+                default:
+                    throw new RuntimeException();
+            }
             batch.commit();
-            return;
-        }
-        switch (mChatType) {
-            case Constants.CHAT_TYPE_SINGLE:
-                batch.update(Utils.getUsersChatsRef(mCurrentUid).document(mChatId), Constants.FIELD_LAST_MESSAGE_DELETED, true);
-                batch.update(Utils.getUsersChatsRef(mOtherUid).document(mChatId), Constants.FIELD_LAST_MESSAGE_DELETED, true);
-                break;
-            case Constants.CHAT_TYPE_GROUP:
-                for (String uid : mMembersUid) {
-                    batch.update(Utils.getUsersChatsRef(uid).document(mChatId), Constants.FIELD_LAST_MESSAGE_DELETED, true);
-                }
-                break;
-            default:
-                throw new RuntimeException();
-        }
-        batch.commit();
+        });
+        deleteDialog.setNegativeButton(getString(R.string.dialog_unblock_negative_button_text), null);
+        deleteDialog.show();
     }
 
     private void download(ChatsMessagesDocument chatsMessagesDocument) {
@@ -733,7 +805,14 @@ public class ChatActivity extends BaseActivity implements MessageAdapter.OnClick
         } else if (Constants.CHAT_TYPE_GROUP.equals(mChatType)) {
             popupMenu.getMenuInflater().inflate(R.menu.menu_chat_group, popupMenu.getMenu());
         } else {
-            popupMenu.getMenuInflater().inflate(R.menu.menu_chat_single, popupMenu.getMenu());
+            if (mCurrentUid.equals(mBlockerUid)) {
+                popupMenu.getMenuInflater().inflate(R.menu.menu_chat_single_unblock, popupMenu.getMenu());
+            } else {
+                popupMenu.getMenuInflater().inflate(R.menu.menu_chat_single_block, popupMenu.getMenu());
+            }
+        }
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            popupMenu.setForceShowIcon(true);
         }
         popupMenu.setOnMenuItemClickListener(item -> {
             int itemId = item.getItemId();
@@ -754,6 +833,9 @@ public class ChatActivity extends BaseActivity implements MessageAdapter.OnClick
             } else if (R.id.menu_chat_item_block == itemId) {
                 onBlockMenuItemClick();
                 return true;
+            } else if (R.id.menu_chat_item_unblock == itemId) {
+                onUnblockMenuItemClick();
+                return true;
             } else {
                 return false;
             }
@@ -763,10 +845,11 @@ public class ChatActivity extends BaseActivity implements MessageAdapter.OnClick
 
     private void onMenuItemClick(String mode) {
         Intent intent = new Intent(this, GroupActivity.class);
+        intent.putExtra(Constants.EXTRA_AUTHENTICATED, true);
         intent.putExtra(Constants.EXTRA_MODE, mode);
         intent.putExtra(Constants.EXTRA_CHAT_ID, mChatId);
         intent.putExtra(Constants.EXTRA_OTHERS_USERNAME, (Serializable) mOthersUsername);
-        startActivity(intent);
+        mActivityLauncher.launch(intent);
     }
 
     private void onLeaveMenuItemClick() {
@@ -784,7 +867,7 @@ public class ChatActivity extends BaseActivity implements MessageAdapter.OnClick
                     return;
                 }
                 String content = mCurrentUid + Constants.USER_REMOVED + mCurrentUid;
-                Utils.addSystemChatsMessagesDocument(TAG, mChatId, content, mMembersUid, this::finish);
+                Utils.addSystemChatsMessagesDocument(TAG, mChatId, mChatType, content, mMembersUid, this::finish);
             });
         });
         leaveDialog.setNegativeButton(getString(R.string.dialog_leave_group_negative_button_text), null);
@@ -792,15 +875,47 @@ public class ChatActivity extends BaseActivity implements MessageAdapter.OnClick
     }
 
     private void onBlockMenuItemClick() {
-        String username = mOthersUsername.values().toArray()[0].toString();
+        if (mBlockerUid != null || mChatId == null) {
+            return;
+        }
+        String username = mOthersUsername.get(mOtherUid);
         AlertDialog.Builder blockDialog = new AlertDialog.Builder(this);
         blockDialog.setTitle(getString(R.string.dialog_block_title, username));
         blockDialog.setMessage(getString(R.string.dialog_block_message, username));
         blockDialog.setPositiveButton(getString(R.string.dialog_block_positive_button_text), (dialog, which) -> {
-            // TODO
+            if (mBlockerUid != null || mChatId == null) {
+                return;
+            }
+            Utils.getChatsRef().document(mChatId).update(Constants.FIELD_BLOCKER_UID, mCurrentUid).addOnCompleteListener(task -> {
+                if (!task.isSuccessful()) {
+                    Utils.logTaskException(TAG, task);
+                    return;
+                }
+                String content = mCurrentUid + Constants.BLOCKED + mOtherUid;
+                Utils.addSystemChatsMessagesDocument(TAG, mChatId, mChatType, content,
+                        Arrays.asList(mCurrentUid, mOtherUid), null);
+            });
         });
         blockDialog.setNegativeButton(getString(R.string.dialog_block_negative_button_text), null);
         blockDialog.show();
+    }
+
+    private void onUnblockMenuItemClick() {
+        String username = mOthersUsername.get(mOtherUid);
+        AlertDialog.Builder unblockDialog = new AlertDialog.Builder(this);
+        unblockDialog.setTitle(getString(R.string.dialog_unblock_title, username));
+        unblockDialog.setMessage(getString(R.string.dialog_unblock_message, username));
+        unblockDialog.setPositiveButton(getString(R.string.dialog_unblock_positive_button_text), (dialog, which) -> Utils.getChatsRef().document(mChatId).update(Constants.FIELD_BLOCKER_UID, null).addOnCompleteListener(task -> {
+            if (!task.isSuccessful()) {
+                Utils.logTaskException(TAG, task);
+                return;
+            }
+            String content = mCurrentUid + Constants.UNBLOCKED + mOtherUid;
+            Utils.addSystemChatsMessagesDocument(TAG, mChatId, mChatType, content,
+                    Arrays.asList(mCurrentUid, mOtherUid), null);
+        }));
+        unblockDialog.setNegativeButton(getString(R.string.dialog_unblock_negative_button_text), null);
+        unblockDialog.show();
     }
 
     @Override

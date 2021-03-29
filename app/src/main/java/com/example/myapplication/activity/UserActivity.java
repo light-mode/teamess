@@ -3,6 +3,7 @@ package com.example.myapplication.activity;
 import android.Manifest;
 import android.app.DatePickerDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
@@ -13,6 +14,7 @@ import android.provider.MediaStore;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.DatePicker;
@@ -24,7 +26,9 @@ import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.content.res.AppCompatResources;
+import androidx.preference.PreferenceManager;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
@@ -65,12 +69,27 @@ public class UserActivity extends BaseActivity implements DatePickerDialog.OnDat
     private boolean mDocumentHasChanged;
     private ActivityResultLauncher<Intent> mCameraLauncher;
     private ActivityResultLauncher<Intent> mGetContentLauncher;
+    private final ActivityResultLauncher<Intent> mActivityLauncher;
+
+    public UserActivity() {
+        mActivityLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                });
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user);
         setTitle(getString(R.string.activity_user_title));
+
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setDisplayShowHomeEnabled(true);
+        }
+
         setReference();
         setDefault();
         loadData();
@@ -108,7 +127,6 @@ public class UserActivity extends BaseActivity implements DatePickerDialog.OnDat
         mAvatarImageView.setOnClickListener(v -> onAvatarImageViewClick());
         mChooseImageButton.setOnClickListener(v -> onChooseImageButtonClick());
         mTakePhotoButton.setOnClickListener(v -> onTakePhotoButtonClick());
-        mDobEditText.setOnClickListener(v -> onDobTextInputLayoutClick());
         mSaveButton.setOnClickListener(v -> onSaveButtonClick());
         mUsernameEditText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -128,12 +146,9 @@ public class UserActivity extends BaseActivity implements DatePickerDialog.OnDat
                 } else if (username.length() > Constants.NAME_LENGTH_MAX) {
                     mUsernameTextInputLayout.setError(getString(R.string.activity_user_text_input_layout_username_error_max));
                     mSaveButton.setEnabled(false);
-                } else if (username.contains("_")) {
-                    mUsernameTextInputLayout.setError(getString(R.string.activity_user_text_input_layout_username_error_contain_underscore));
-                    mSaveButton.setEnabled(false);
                 } else {
                     mUsernameTextInputLayout.setError(null);
-                    mDocumentHasChanged = !username.equals(mUsersDocument.getUsername());
+                    mDocumentHasChanged = mUsersDocument == null || !username.equals(mUsersDocument.getUsername());
                     checkSaveButtonEnable();
                 }
             }
@@ -150,7 +165,7 @@ public class UserActivity extends BaseActivity implements DatePickerDialog.OnDat
             @Override
             public void afterTextChanged(Editable s) {
                 String bio = Formatter.formatName(mBioEditText.getEditableText().toString());
-                mDocumentHasChanged = !bio.equals(mUsersDocument.getBio());
+                mDocumentHasChanged = mUsersDocument == null || !bio.equals(mUsersDocument.getBio());
                 checkSaveButtonEnable();
             }
         });
@@ -185,6 +200,7 @@ public class UserActivity extends BaseActivity implements DatePickerDialog.OnDat
                 mUsernameEditText.setText(mUsersDocument.getUsername());
                 mDobEditText.setText(mUsersDocument.getDob());
                 mBioEditText.setText(mUsersDocument.getBio());
+                mDobEditText.setOnClickListener(v -> onDobEditTextClick());
             }
         });
     }
@@ -219,14 +235,22 @@ public class UserActivity extends BaseActivity implements DatePickerDialog.OnDat
         }
     }
 
-    private void onDobTextInputLayoutClick() {
+    private void onDobEditTextClick() {
         mUsernameEditText.clearFocus();
         mBioEditText.clearFocus();
-        Calendar calendar = new GregorianCalendar();
-        int year = calendar.get(Calendar.YEAR);
-        int month = calendar.get(Calendar.MONTH);
-        int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
-        new DatePickerDialog(this, this, year, month, dayOfMonth).show();
+        if (mDobEditText.getText() == null) {
+            Calendar calendar = new GregorianCalendar();
+            int year = calendar.get(Calendar.YEAR);
+            int month = calendar.get(Calendar.MONTH);
+            int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
+            new DatePickerDialog(this, this, year, month, dayOfMonth).show();
+        } else {
+            String[] dobArray = mDobEditText.getText().toString().split(Constants.DOB_SEPARATOR);
+            int year = Integer.parseInt(dobArray[2]);
+            int month = Integer.parseInt(dobArray[1]);
+            int dayOfMonth = Integer.parseInt(dobArray[0]);
+            new DatePickerDialog(this, this, year, month - 1, dayOfMonth).show();
+        }
     }
 
     @Override
@@ -254,7 +278,7 @@ public class UserActivity extends BaseActivity implements DatePickerDialog.OnDat
                 .into(mAvatarImageView);
     }
 
-    private void onGetImageLauncherReturn(ActivityResult result) {
+    private void onGetImageLauncherReturn(@NonNull ActivityResult result) {
         if (result.getResultCode() == RESULT_CANCELED || result.getData() == null) {
             return;
         }
@@ -269,6 +293,11 @@ public class UserActivity extends BaseActivity implements DatePickerDialog.OnDat
     }
 
     private void onSaveButtonClick() {
+        if (mUsernameNotSet) {
+            SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(this).edit();
+            editor.putBoolean(getString(R.string.pref_username_set), true);
+            editor.apply();
+        }
         if (mAvatarHasChanged) {
             uploadAvatar();
         } else if (mDocumentHasChanged) {
@@ -311,7 +340,9 @@ public class UserActivity extends BaseActivity implements DatePickerDialog.OnDat
                 return;
             }
             if (mUsernameNotSet && mAvatarHasChanged) {
-                startActivity(new Intent(this, MainActivity.class));
+                Intent intent = new Intent(this, MainActivity.class);
+                intent.putExtra(Constants.EXTRA_AUTHENTICATED, true);
+                mActivityLauncher.launch(intent);
                 finish();
             } else if (mUsernameNotSet) {
                 uploadDefaultAvatar();
@@ -334,9 +365,21 @@ public class UserActivity extends BaseActivity implements DatePickerDialog.OnDat
                 Utils.logTaskException(TAG, task);
                 return;
             }
-            startActivity(new Intent(this, MainActivity.class));
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.putExtra(Constants.EXTRA_AUTHENTICATED, true);
+            mActivityLauncher.launch(intent);
             finish();
         });
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int itemId = item.getItemId();
+        if (android.R.id.home == itemId) {
+            finish();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -363,6 +406,7 @@ public class UserActivity extends BaseActivity implements DatePickerDialog.OnDat
             String dob = getString(R.string.dob_format, dayOfMonth, month + 1, year);
             mDobEditText.setText(dob);
             mDocumentHasChanged = !dob.equals(mUsersDocument.getDob());
+            checkSaveButtonEnable();
         }
     }
 }

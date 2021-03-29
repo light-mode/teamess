@@ -29,13 +29,24 @@ import com.example.myapplication.utilities.Constants;
 import com.example.myapplication.utilities.Converter;
 import com.example.myapplication.utilities.Utils;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldPath;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
 public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHolder> {
     public static final String TAG = "MessageAdapter";
+    public int memberCount;
+
+    private TextView mDisplayingTimestampTextView;
+    private TextView mDisplayingSeenTextView;
+    private FloatingActionButton mDisplayingCopyButton;
+    private FloatingActionButton mDisplayingDownloadButton;
+    private FloatingActionButton mDisplayingDeleteButton;
+    private FloatingActionButton mDisplayingFullscreenButton;
 
     private final String mChatId;
     private final String mChatType;
@@ -128,17 +139,17 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
         }
         ChatsMessagesDocument chatsMessagesDocument = mChatsMessagesDocuments.get(position);
         if (holder.mTimestampTextView != null) {
-            holder.mTimestampTextView.setText(Converter.convertTimestampToString(chatsMessagesDocument.getTimestamp()));
+            holder.mTimestampTextView.setText(Converter.convertTimestampToString(mContext, chatsMessagesDocument.getTimestamp()));
         }
         if (Constants.MESSAGE_TYPE_SYSTEM.equals(chatsMessagesDocument.getType())) {
             loadUsernameThenBindMainView(chatsMessagesDocument, holder);
             return;
         }
-        bindAvatarImageView(chatsMessagesDocument, holder.mAvatarImageView);
+        bindAvatarImageView(chatsMessagesDocument, holder);
         loadUsernameThenBindSeenViewAndMainView(chatsMessagesDocument, holder);
     }
 
-    private void loadUsernameThenBindSeenViewAndMainView(ChatsMessagesDocument chatsMessagesDocument, ViewHolder holder) {
+    private void loadUsernameThenBindSeenViewAndMainView(@NonNull ChatsMessagesDocument chatsMessagesDocument, ViewHolder holder) {
         String senderUid = chatsMessagesDocument.getSenderUid();
         String senderUsername = mOthersUsername.get(senderUid);
         if (!senderUid.equals(mCurrentUid) && senderUsername == null) {
@@ -158,25 +169,15 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
         }
     }
 
-    private void bindAvatarImageView(ChatsMessagesDocument chatsMessagesDocument, ImageView avatarImageView) {
-        if (avatarImageView == null) {
+    private void bindAvatarImageView(@NonNull ChatsMessagesDocument chatsMessagesDocument, @NonNull ViewHolder holder) {
+        if (holder.mAvatarImageView == null) {
             return;
         }
         String senderUid = chatsMessagesDocument.getSenderUid();
         Glide.with(mContext).load(Utils.getUsersAvatarRef(senderUid))
                 .error(R.drawable.ic_baseline_person_24)
                 .skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE)
-                .addListener(new RequestListener<Drawable>() {
-                    @Override
-                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
-                        return false;
-                    }
-                }).into(avatarImageView);
+                .into(holder.mAvatarImageView);
     }
 
     private void bindSeenTextView(ChatsMessagesDocument chatsMessagesDocument, TextView seenTextView) {
@@ -192,13 +193,13 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
                 seen.append(mContext.getString(R.string.delivered));
             }
         } else {
-            if (seenUserIds.size() == mOthersUsername.size() + 1) {
+            if (seenUserIds.size() == memberCount) {
                 seen.append(mContext.getString(R.string.seen_by_everyone));
             } else {
                 seen.append(mContext.getString(R.string.seen_by)).append(" ");
                 for (int index = 0; index < seenUserIds.size(); index++) {
                     String seenUid = seenUserIds.get(index);
-                    seen.append(seenUid.equals(mCurrentUid) ? "you" : mOthersUsername.get(seenUid));
+                    seen.append(seenUid.equals(mCurrentUid) ? mContext.getString(R.string.you) : mOthersUsername.get(seenUid));
                     seen.append(index == seenUserIds.size() - 1 ? "" : ", ");
                 }
             }
@@ -206,56 +207,83 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
         seenTextView.setText(seen.toString());
     }
 
-    private void loadUsernameThenBindMainView(ChatsMessagesDocument chatsMessagesDocument, ViewHolder holder) {
+    private void loadUsernameThenBindMainView(@NonNull ChatsMessagesDocument chatsMessagesDocument, @NonNull ViewHolder holder) {
         String content = chatsMessagesDocument.getContent();
-        if (holder.getItemViewType() == VIEW_TYPE_SYSTEM && content.contains(Constants.USER_ADDED)) {
-            String[] contentArray = content.split("_");
-            String addedUid = contentArray[contentArray.length - 1];
-            Utils.getUsersRef().document(addedUid).get().addOnCompleteListener(task -> {
-                if (!task.isSuccessful() || task.getResult() == null) {
-                    Utils.logTaskException(TAG, task);
+        if (holder.getItemViewType() == VIEW_TYPE_SYSTEM) {
+            if (content.contains(Constants.USER_ADDED) || content.contains(Constants.USER_REMOVED)) {
+                String[] contentArray = content.split("_");
+                String sourceUid = contentArray[0];
+                String targetUid = contentArray[contentArray.length - 1];
+                List<String> newUserIds = new ArrayList<>();
+                if (mOthersUsername.get(sourceUid) == null) {
+                    newUserIds.add(sourceUid);
+                }
+                if (mOthersUsername.get(targetUid) == null) {
+                    newUserIds.add(targetUid);
+                }
+                if (newUserIds.isEmpty()) {
+                    bindMainView(chatsMessagesDocument, holder);
                     return;
                 }
-                String username = Objects.requireNonNull(task.getResult().get(Constants.FIELD_USERNAME)).toString();
-                mOthersUsername.put(addedUid, username);
+                Utils.getUsersRef().whereIn(FieldPath.documentId(), newUserIds).get().addOnCompleteListener(task -> {
+                    if (!task.isSuccessful() || task.getResult() == null) {
+                        Utils.logTaskException(TAG, task);
+                        return;
+                    }
+                    List<DocumentSnapshot> documentSnapshots = task.getResult().getDocuments();
+                    for (DocumentSnapshot documentSnapshot : documentSnapshots) {
+                        String uid = documentSnapshot.getId();
+                        String username = Objects.requireNonNull(documentSnapshot.get(Constants.FIELD_USERNAME)).toString();
+                        mOthersUsername.put(uid, username);
+                    }
+                    bindMainView(chatsMessagesDocument, holder);
+                });
+            } else if (content.contains(Constants.GROUP_CREATED)
+                    || content.contains(Constants.GROUP_NAME_CHANGED)
+                    || content.contains(Constants.GROUP_AVATAR_CHANGED)) {
+                String[] contentArray = content.split("_");
+                String creatorUid = contentArray[0];
+                if (mOthersUsername.get(creatorUid) != null) {
+                    bindMainView(chatsMessagesDocument, holder);
+                    return;
+                }
+                Utils.getUsersRef().document(creatorUid).get().addOnCompleteListener(task -> {
+                    if (!task.isSuccessful() || task.getResult() == null) {
+                        Utils.logTaskException(TAG, task);
+                        return;
+                    }
+                    String username = Objects.requireNonNull(task.getResult().get(Constants.FIELD_USERNAME)).toString();
+                    mOthersUsername.put(creatorUid, username);
+                    bindMainView(chatsMessagesDocument, holder);
+                });
+            } else if (content.contains(Constants.BLOCKED) || content.contains(Constants.UNBLOCKED)) {
                 bindMainView(chatsMessagesDocument, holder);
-            });
+            } else {
+                throw new RuntimeException();
+            }
         } else {
             bindMainView(chatsMessagesDocument, holder);
         }
     }
 
-    private void bindMainView(ChatsMessagesDocument chatsMessagesDocument, ViewHolder holder) {
+    private void bindMainView(ChatsMessagesDocument chatsMessagesDocument, @NonNull ViewHolder holder) {
         switch (holder.getItemViewType()) {
             case VIEW_TYPE_TEXT_LEFT:
             case VIEW_TYPE_TEXT_RIGHT:
-                if (chatsMessagesDocument.isDeleted()) {
-                    if (holder.mContentTextView != null) {
-                        holder.mContentTextView.setText(mContext.getText(R.string.default_message_deleted));
-                        holder.mContentTextView.setTextColor(Color.GRAY);
-                    }
-                    if (holder.mCopyButton != null) {
-                        holder.mCopyButton.setVisibility(View.INVISIBLE);
-                    }
-                    if (holder.mDeleteButton != null) {
-                        holder.mDeleteButton.setVisibility(View.INVISIBLE);
-                    }
-                } else {
-                    if (holder.mContentTextView != null) {
-                        holder.mContentTextView.setText(chatsMessagesDocument.getContent());
-                        holder.mContentTextView.setTextColor(ContextCompat.getColor(mContext,
-                                chatsMessagesDocument.getSenderUid().equals(mCurrentUid)
-                                        ? R.color.black : R.color.design_default_color_on_primary));
-                    }
-                    if (holder.mCopyButton != null) {
-                        holder.mCopyButton.setVisibility(View.VISIBLE);
-                        holder.mCopyButton.setOnClickListener(v -> onCopyButtonClick(chatsMessagesDocument.getContent()));
-                    }
-                    if (holder.mDeleteButton != null) {
-                        holder.mDeleteButton.setVisibility(View.VISIBLE);
-                        holder.mDeleteButton.setOnClickListener(v -> mOnClickListener.onDeleteButtonClick(chatsMessagesDocument));
-                    }
+                if (holder.mContentTextView == null) {
+                    break;
                 }
+                if (chatsMessagesDocument.isDeleted()) {
+                    holder.mContentTextView.setText(mContext.getText(R.string.default_message_deleted));
+                    holder.mContentTextView.setTextColor(Color.GRAY);
+                    holder.mContentTextView.setClickable(false);
+                    break;
+                }
+                holder.mContentTextView.setText(chatsMessagesDocument.getContent());
+                holder.mContentTextView.setTextColor(ContextCompat.getColor(mContext,
+                        chatsMessagesDocument.getSenderUid().equals(mCurrentUid)
+                                ? R.color.black : R.color.design_default_color_on_primary));
+                holder.mContentTextView.setOnClickListener(v -> onPrimaryViewClick(chatsMessagesDocument, holder));
                 break;
             case VIEW_TYPE_ICON_LEFT:
             case VIEW_TYPE_ICON_RIGHT:
@@ -288,6 +316,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
                         holder.mContentIconView.setImageResource(R.drawable.ic_baseline_sentiment_very_dissatisfied_24);
                         break;
                 }
+                holder.mContentIconView.setOnClickListener(v -> onPrimaryViewClick(chatsMessagesDocument, holder));
                 break;
             case VIEW_TYPE_IMAGE_LEFT:
             case VIEW_TYPE_IMAGE_RIGHT:
@@ -306,58 +335,64 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
 
                             @Override
                             public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
-                                holder.mContentImageView.setOnClickListener(v -> mOnClickListener.onImageContentClick(imageId, resource));
+                                holder.mContentImageView.setOnClickListener(v -> onImageViewClick(chatsMessagesDocument, holder, imageId, resource));
                                 return false;
                             }
                         }).into(holder.mContentImageView);
-                if (holder.mDownloadButton != null) {
-                    holder.mDownloadButton.setOnClickListener(v -> mOnClickListener.onDownloadButtonClick(chatsMessagesDocument));
-                }
                 break;
             case VIEW_TYPE_FILE_LEFT:
             case VIEW_TYPE_FILE_RIGHT:
                 if (holder.mContentTextView != null) {
                     holder.mContentTextView.setText(chatsMessagesDocument.getContent());
-                }
-                if (holder.mDownloadButton != null) {
-                    holder.mDownloadButton.setOnClickListener(
-                            v -> mOnClickListener.onDownloadButtonClick(chatsMessagesDocument));
+                    holder.mContentTextView.setOnClickListener(v -> onPrimaryViewClick(chatsMessagesDocument, holder));
                 }
                 break;
             case VIEW_TYPE_SYSTEM:
                 if (holder.mContentTextView == null) {
                     break;
                 }
-                String message = Converter.convertTimestampToString(chatsMessagesDocument.getTimestamp()) + '\n';
+                String you = mContext.getString(R.string.you);
+                String capitalYou = mContext.getString(R.string.you_capital);
+                String message = Converter.convertTimestampToString(mContext, chatsMessagesDocument.getTimestamp()) + '\n';
                 String content = chatsMessagesDocument.getContent();
                 String[] contentArray = content.split("_");
-                String uidSource = contentArray[0];
+                String sourceUid = contentArray[0];
                 if (content.contains(Constants.GROUP_CREATED)) {
                     message += mContext.getString(R.string.system_message_format_group_created,
-                            uidSource.equals(mCurrentUid) ? "You" : mOthersUsername.get(uidSource));
+                            sourceUid.equals(mCurrentUid) ? capitalYou : mOthersUsername.get(sourceUid));
                 } else if (content.contains(Constants.USER_ADDED)) {
-                    String uidTarget = contentArray[contentArray.length - 1];
+                    String targetUid = contentArray[contentArray.length - 1];
                     message += mContext.getString(R.string.system_message_format_user_added,
-                            uidSource.equals(mCurrentUid) ? "You" : mOthersUsername.get(uidSource),
-                            uidTarget.equals(mCurrentUid) ? "you" : mOthersUsername.get(uidTarget));
+                            sourceUid.equals(mCurrentUid) ? capitalYou : mOthersUsername.get(sourceUid),
+                            targetUid.equals(mCurrentUid) ? you : mOthersUsername.get(targetUid));
                 } else if (content.contains(Constants.USER_REMOVED)) {
-                    String uidTarget = contentArray[contentArray.length - 1];
-                    if (uidSource.equals(uidTarget)) {
+                    String targetUid = contentArray[contentArray.length - 1];
+                    if (sourceUid.equals(targetUid)) {
                         message += mContext.getString(R.string.system_message_format_user_left,
-                                uidSource.equals(mCurrentUid) ? "You" : mOthersUsername.get(uidSource));
+                                sourceUid.equals(mCurrentUid) ? capitalYou : mOthersUsername.get(sourceUid));
                     } else {
                         message += mContext.getString(R.string.system_message_format_user_removed,
-                                uidSource.equals(mCurrentUid) ? "You" : mOthersUsername.get(uidSource),
-                                uidTarget.equals(mCurrentUid) ? "you" : mOthersUsername.get(uidTarget));
+                                sourceUid.equals(mCurrentUid) ? capitalYou : mOthersUsername.get(sourceUid),
+                                targetUid.equals(mCurrentUid) ? you : mOthersUsername.get(targetUid));
                     }
                 } else if (content.contains(Constants.GROUP_NAME_CHANGED)) {
                     String newGroupName = contentArray[contentArray.length - 1];
                     message += mContext.getString(R.string.system_message_format_group_name_changed,
-                            uidSource.equals(mCurrentUid) ? "You" : mOthersUsername.get(uidSource),
+                            sourceUid.equals(mCurrentUid) ? capitalYou : mOthersUsername.get(sourceUid),
                             newGroupName);
                 } else if (content.contains(Constants.GROUP_AVATAR_CHANGED)) {
                     message += mContext.getString(R.string.system_message_format_group_avatar_changed,
-                            uidSource.equals(mCurrentUid) ? "You" : mOthersUsername.get(uidSource));
+                            sourceUid.equals(mCurrentUid) ? capitalYou : mOthersUsername.get(sourceUid));
+                } else if (content.contains(Constants.BLOCKED)) {
+                    String targetUid = contentArray[contentArray.length - 1];
+                    message += mContext.getString(R.string.system_message_format_blocked,
+                            sourceUid.equals(mCurrentUid) ? capitalYou : mOthersUsername.get(sourceUid),
+                            targetUid.equals(mCurrentUid) ? you : mOthersUsername.get(targetUid));
+                } else if (content.contains(Constants.UNBLOCKED)) {
+                    String targetUid = contentArray[contentArray.length - 1];
+                    message += mContext.getString(R.string.system_message_format_unblocked,
+                            sourceUid.equals(mCurrentUid) ? capitalYou : mOthersUsername.get(sourceUid),
+                            targetUid.equals(mCurrentUid) ? you : mOthersUsername.get(targetUid));
                 } else {
                     throw new RuntimeException();
                 }
@@ -365,6 +400,90 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
                 break;
             default:
                 throw new RuntimeException();
+        }
+    }
+
+    private void onPrimaryViewClick(ChatsMessagesDocument chatsMessagesDocument, ViewHolder holder) {
+        hideDisplayingSecondaryView();
+        showSecondaryViewFromSelectedPrimaryView(chatsMessagesDocument, holder);
+    }
+
+    private void onImageViewClick(ChatsMessagesDocument chatsMessagesDocument, ViewHolder holder, String imageId, Drawable drawable) {
+        hideDisplayingSecondaryView();
+        showSecondaryViewsFromSelectedImageView(chatsMessagesDocument, holder, imageId, drawable);
+    }
+
+    public void hideDisplayingSecondaryView() {
+        if (mDisplayingTimestampTextView != null) {
+            mDisplayingTimestampTextView.setVisibility(View.GONE);
+            mDisplayingTimestampTextView = null;
+        }
+        if (mDisplayingSeenTextView != null) {
+            mDisplayingSeenTextView.setVisibility(View.GONE);
+            mDisplayingSeenTextView = null;
+        }
+        if (mDisplayingCopyButton != null) {
+            mDisplayingCopyButton.setVisibility(View.GONE);
+            mDisplayingCopyButton = null;
+        }
+        if (mDisplayingDownloadButton != null) {
+            mDisplayingDownloadButton.setVisibility(View.GONE);
+            mDisplayingDownloadButton = null;
+        }
+        if (mDisplayingDeleteButton != null) {
+            mDisplayingDeleteButton.setVisibility(View.GONE);
+            mDisplayingDeleteButton = null;
+        }
+        if (mDisplayingFullscreenButton != null) {
+            mDisplayingFullscreenButton.setVisibility(View.GONE);
+            mDisplayingFullscreenButton = null;
+        }
+    }
+
+    private void showSecondaryViewFromSelectedPrimaryView(ChatsMessagesDocument chatsMessagesDocument, @NonNull ViewHolder holder) {
+        if (holder.mTimestampTextView != null) {
+            holder.mTimestampTextView.setVisibility(View.VISIBLE);
+            mDisplayingTimestampTextView = holder.mTimestampTextView;
+        }
+        if (holder.mSeenTextView != null) {
+            holder.mSeenTextView.setVisibility(View.VISIBLE);
+            mDisplayingSeenTextView = holder.mSeenTextView;
+        }
+        if (holder.mCopyButton != null) {
+            holder.mCopyButton.setVisibility(View.VISIBLE);
+            holder.mCopyButton.setOnClickListener(v -> onCopyButtonClick(chatsMessagesDocument.getContent()));
+            mDisplayingCopyButton = holder.mCopyButton;
+        }
+        if (holder.mDownloadButton != null) {
+            holder.mDownloadButton.setVisibility(View.VISIBLE);
+            holder.mDownloadButton.setOnClickListener(v -> mOnClickListener.onDownloadButtonClick(chatsMessagesDocument));
+            mDisplayingDownloadButton = holder.mDownloadButton;
+        }
+        if (holder.mDeleteButton != null) {
+            holder.mDeleteButton.setVisibility(View.VISIBLE);
+            holder.mDeleteButton.setOnClickListener(v -> mOnClickListener.onDeleteButtonClick(chatsMessagesDocument));
+            mDisplayingDeleteButton = holder.mDeleteButton;
+        }
+    }
+
+    private void showSecondaryViewsFromSelectedImageView(ChatsMessagesDocument chatsMessagesDocument, @NonNull ViewHolder holder, String imageId, Drawable image) {
+        if (holder.mTimestampTextView != null) {
+            holder.mTimestampTextView.setVisibility(View.VISIBLE);
+            mDisplayingTimestampTextView = holder.mTimestampTextView;
+        }
+        if (holder.mSeenTextView != null) {
+            holder.mSeenTextView.setVisibility(View.VISIBLE);
+            mDisplayingSeenTextView = holder.mSeenTextView;
+        }
+        if (holder.mDownloadButton != null) {
+            holder.mDownloadButton.setVisibility(View.VISIBLE);
+            holder.mDownloadButton.setOnClickListener(v -> mOnClickListener.onDownloadButtonClick(chatsMessagesDocument));
+            mDisplayingDownloadButton = holder.mDownloadButton;
+        }
+        if (holder.mFullscreenButton != null) {
+            holder.mFullscreenButton.setVisibility(View.VISIBLE);
+            holder.mFullscreenButton.setOnClickListener(v -> mOnClickListener.onFullscreenButtonClick(imageId, image));
+            mDisplayingFullscreenButton = holder.mFullscreenButton;
         }
     }
 
@@ -376,7 +495,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
     }
 
     public interface OnClickListener {
-        void onImageContentClick(String imageId, Drawable image);
+        void onFullscreenButtonClick(String imageId, Drawable image);
 
         void onDownloadButtonClick(ChatsMessagesDocument chatsMessagesDocument);
 
@@ -398,6 +517,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
         private final FloatingActionButton mCopyButton;
         private final FloatingActionButton mDownloadButton;
         private final FloatingActionButton mDeleteButton;
+        private final FloatingActionButton mFullscreenButton;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -410,6 +530,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
             mCopyButton = itemView.findViewById(R.id.activity_chat_item_button_copy);
             mDownloadButton = itemView.findViewById(R.id.activity_chat_item_button_download);
             mDeleteButton = itemView.findViewById(R.id.activity_chat_item_button_delete);
+            mFullscreenButton = itemView.findViewById(R.id.activity_chat_item_button_fullscreen);
         }
     }
 

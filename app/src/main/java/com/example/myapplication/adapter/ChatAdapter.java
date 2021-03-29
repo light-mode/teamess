@@ -17,11 +17,15 @@ import com.example.myapplication.document.UsersChatsDocument;
 import com.example.myapplication.utilities.Constants;
 import com.example.myapplication.utilities.Converter;
 import com.example.myapplication.utilities.Utils;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldPath;
 import com.google.firebase.storage.StorageReference;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
     public static final String TAG = "ChatAdapter";
@@ -58,9 +62,10 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
         UsersChatsDocument usersChatsDocument = mUsersChatsDocuments.get(position);
         bindAvatar(usersChatsDocument, holder);
         bindChatName(usersChatsDocument, holder);
-        bindLastMessage(usersChatsDocument, holder);
+        loadUsernameThenBindLastMessage(usersChatsDocument, holder);
         holder.itemView.setOnClickListener(v -> mOnItemClickListener.onItemClick(
-                usersChatsDocument.getId(), usersChatsDocument.getType(), usersChatsDocument.getOtherUid()));
+                usersChatsDocument.getId(), usersChatsDocument.getType(),
+                usersChatsDocument.getOtherUid()));
     }
 
     private void bindChatName(@NonNull UsersChatsDocument usersChatsDocument, ViewHolder holder) {
@@ -69,6 +74,65 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
             holder.mChatNameTextView.setText(mOthersUsername.get(uid));
         } else {
             holder.mChatNameTextView.setText(mChatNames.get(usersChatsDocument.getId()));
+        }
+    }
+
+    private void loadUsernameThenBindLastMessage(@NonNull UsersChatsDocument usersChatsDocument, ViewHolder holder) {
+        String content = usersChatsDocument.getLastMessageContent();
+        if (Constants.MESSAGE_TYPE_SYSTEM.equals(usersChatsDocument.getLastMessageType())) {
+            if (content.contains(Constants.USER_ADDED) || content.contains(Constants.USER_REMOVED)) {
+                String[] contentArray = content.split("_");
+                String sourceUid = contentArray[0];
+                String targetUid = contentArray[contentArray.length - 1];
+                List<String> newUserIds = new ArrayList<>();
+                if (mOthersUsername.get(sourceUid) == null) {
+                    newUserIds.add(sourceUid);
+                }
+                if (mOthersUsername.get(targetUid) == null) {
+                    newUserIds.add(targetUid);
+                }
+                if (newUserIds.isEmpty()) {
+                    bindLastMessage(usersChatsDocument, holder);
+                    return;
+                }
+                Utils.getUsersRef().whereIn(FieldPath.documentId(), newUserIds).get().addOnCompleteListener(task -> {
+                    if (!task.isSuccessful() || task.getResult() == null) {
+                        Utils.logTaskException(TAG, task);
+                        return;
+                    }
+                    List<DocumentSnapshot> documentSnapshots = task.getResult().getDocuments();
+                    for (DocumentSnapshot documentSnapshot : documentSnapshots) {
+                        String uid = documentSnapshot.getId();
+                        String username = Objects.requireNonNull(documentSnapshot.get(Constants.FIELD_USERNAME)).toString();
+                        mOthersUsername.put(uid, username);
+                    }
+                    bindLastMessage(usersChatsDocument, holder);
+                });
+            } else if (content.contains(Constants.GROUP_CREATED)
+                    || content.contains(Constants.GROUP_NAME_CHANGED)
+                    || content.contains(Constants.GROUP_AVATAR_CHANGED)) {
+                String[] contentArray = content.split("_");
+                String creatorUid = contentArray[0];
+                if (mOthersUsername.get(creatorUid) != null) {
+                    bindLastMessage(usersChatsDocument, holder);
+                    return;
+                }
+                Utils.getUsersRef().document(creatorUid).get().addOnCompleteListener(task -> {
+                    if (!task.isSuccessful() || task.getResult() == null) {
+                        Utils.logTaskException(TAG, task);
+                        return;
+                    }
+                    String username = Objects.requireNonNull(task.getResult().get(Constants.FIELD_USERNAME)).toString();
+                    mOthersUsername.put(creatorUid, username);
+                    bindLastMessage(usersChatsDocument, holder);
+                });
+            } else if (content.contains(Constants.BLOCKED) || content.contains(Constants.UNBLOCKED)) {
+                bindLastMessage(usersChatsDocument, holder);
+            } else {
+                throw new RuntimeException();
+            }
+        } else {
+            bindLastMessage(usersChatsDocument, holder);
         }
     }
 
@@ -92,35 +156,54 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
                 message = mContext.getText(R.string.sent_a_file).toString();
                 break;
             case Constants.MESSAGE_TYPE_SYSTEM:
+                String you = mContext.getString(R.string.you);
+                String capitalYou = mContext.getString(R.string.you_capital);
                 String content = usersChatsDocument.getLastMessageContent();
                 String[] contentArray = content.split("_");
-                String uidSource = contentArray[0];
+                String sourceUid = contentArray[0];
                 if (content.contains(Constants.GROUP_CREATED)) {
+                    String groupName = contentArray[contentArray.length - 1];
+                    holder.mChatNameTextView.setText(groupName);
                     message = mContext.getString(R.string.system_message_format_group_created,
-                            uidSource.equals(mCurrentUid) ? "You" : mOthersUsername.get(uidSource));
+                            sourceUid.equals(mCurrentUid) ? capitalYou : mOthersUsername.get(sourceUid));
                 } else if (content.contains(Constants.USER_ADDED)) {
-                    String uidTarget = contentArray[contentArray.length - 1];
+                    String targetUid = contentArray[contentArray.length - 1];
                     message = mContext.getString(R.string.system_message_format_user_added,
-                            uidSource.equals(mCurrentUid) ? "You" : mOthersUsername.get(uidSource),
-                            uidTarget.equals(mCurrentUid) ? "you" : mOthersUsername.get(uidTarget));
+                            sourceUid.equals(mCurrentUid) ? capitalYou : mOthersUsername.get(sourceUid),
+                            targetUid.equals(mCurrentUid) ? you : mOthersUsername.get(targetUid));
                 } else if (content.contains(Constants.USER_REMOVED)) {
-                    String uidTarget = contentArray[contentArray.length - 1];
-                    if (uidSource.equals(uidTarget)) {
+                    String targetUid = contentArray[contentArray.length - 1];
+                    if (sourceUid.equals(targetUid)) {
                         message = mContext.getString(R.string.system_message_format_user_left,
-                                uidSource.equals(mCurrentUid) ? "You" : mOthersUsername.get(uidSource));
+                                sourceUid.equals(mCurrentUid) ? capitalYou : mOthersUsername.get(sourceUid));
                     } else {
                         message = mContext.getString(R.string.system_message_format_user_removed,
-                                uidSource.equals(mCurrentUid) ? "You" : mOthersUsername.get(uidSource),
-                                uidTarget.equals(mCurrentUid) ? "you" : mOthersUsername.get(uidTarget));
+                                sourceUid.equals(mCurrentUid) ? capitalYou : mOthersUsername.get(sourceUid),
+                                targetUid.equals(mCurrentUid) ? you : mOthersUsername.get(targetUid));
                     }
                 } else if (content.contains(Constants.GROUP_AVATAR_CHANGED)) {
+                    Glide.with(mContext).load(Utils.getChatsAvatarRef(usersChatsDocument.getId()))
+                            .error(R.drawable.ic_baseline_group_24)
+                            .skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE)
+                            .into(holder.mAvatarImageView);
                     message = mContext.getString(R.string.system_message_format_group_avatar_changed,
-                            uidSource.equals(mCurrentUid) ? "You" : mOthersUsername.get(uidSource));
+                            sourceUid.equals(mCurrentUid) ? capitalYou : mOthersUsername.get(sourceUid));
                 } else if (content.contains(Constants.GROUP_NAME_CHANGED)) {
-                    String newGroupName = contentArray[contentArray.length - 1];
+                    String groupName = contentArray[contentArray.length - 1];
+                    holder.mChatNameTextView.setText(groupName);
                     message = mContext.getString(R.string.system_message_format_group_name_changed,
-                            uidSource.equals(mCurrentUid) ? "You" : mOthersUsername.get(uidSource),
-                            newGroupName);
+                            sourceUid.equals(mCurrentUid) ? capitalYou : mOthersUsername.get(sourceUid),
+                            groupName);
+                } else if (content.contains(Constants.BLOCKED)) {
+                    String targetUid = contentArray[contentArray.length - 1];
+                    message = mContext.getString(R.string.system_message_format_blocked,
+                            sourceUid.equals(mCurrentUid) ? capitalYou : mOthersUsername.get(sourceUid),
+                            targetUid.equals(mCurrentUid) ? you : mOthersUsername.get(targetUid));
+                } else if (content.contains(Constants.UNBLOCKED)) {
+                    String targetUid = contentArray[contentArray.length - 1];
+                    message = mContext.getString(R.string.system_message_format_unblocked,
+                            sourceUid.equals(mCurrentUid) ? capitalYou : mOthersUsername.get(sourceUid),
+                            targetUid.equals(mCurrentUid) ? you : mOthersUsername.get(targetUid));
                 } else {
                     throw new RuntimeException();
                 }
@@ -130,38 +213,26 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
         }
         if (Constants.MESSAGE_TYPE_SYSTEM.equals(usersChatsDocument.getLastMessageType())) {
             holder.mLastMessageTextView.setText(mContext.getString(R.string.last_message_system_format,
-                    Converter.convertTimestampToString(usersChatsDocument.getLastMessageTimestamp()),
+                    Converter.convertTimestampToString(mContext, usersChatsDocument.getLastMessageTimestamp()),
                     message));
-            String content = usersChatsDocument.getLastMessageContent();
-            if (content.contains(Constants.GROUP_CREATED) || content.contains(Constants.GROUP_NAME_CHANGED)) {
-                String[] contentArray = content.split("_");
-                String groupName = contentArray[contentArray.length - 1];
-                holder.mChatNameTextView.setText(groupName);
-            } else if (usersChatsDocument.getLastMessageContent().contains(Constants.GROUP_AVATAR_CHANGED)) {
-                Glide.with(mContext).load(Utils.getChatsAvatarRef(usersChatsDocument.getId()))
-                        .error(R.drawable.ic_baseline_group_24)
-                        .skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE)
-                        .into(holder.mAvatarImageView);
-            }
         } else {
             String senderUid = usersChatsDocument.getLastMessageSenderUid();
             holder.mLastMessageTextView.setText(mContext.getString(R.string.last_message_normal_format,
-                    Converter.convertTimestampToString(usersChatsDocument.getLastMessageTimestamp()),
-                    senderUid.equals(mCurrentUid) ? "You" : mOthersUsername.get(senderUid),
+                    Converter.convertTimestampToString(mContext, usersChatsDocument.getLastMessageTimestamp()),
+                    senderUid.equals(mCurrentUid) ? mContext.getString(R.string.you_capital) : mOthersUsername.get(senderUid),
                     message
             ));
         }
     }
 
-    private void bindAvatar(@NonNull UsersChatsDocument usersChatsDocument, ViewHolder holder) {
+    private void bindAvatar(@NonNull UsersChatsDocument usersChatsDocument, @NonNull ViewHolder holder) {
         holder.mAvatarImageView.setImageDrawable(null);
         StorageReference avatarRef = Constants.CHAT_TYPE_SINGLE.equals(usersChatsDocument.getType())
                 ? Utils.getUsersAvatarRef(usersChatsDocument.getOtherUid())
                 : Utils.getChatsAvatarRef(usersChatsDocument.getId());
         Glide.with(mContext).load(avatarRef)
                 .error(Constants.CHAT_TYPE_SINGLE.equals(usersChatsDocument.getType())
-                        ? R.drawable.ic_baseline_person_24
-                        : R.drawable.ic_baseline_group_24)
+                        ? R.drawable.ic_baseline_person_24 : R.drawable.ic_baseline_group_24)
                 .skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE)
                 .into(holder.mAvatarImageView);
     }

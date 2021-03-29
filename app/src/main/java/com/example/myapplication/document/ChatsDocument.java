@@ -6,6 +6,7 @@ public class ChatsDocument {
     private String type;
     private String name;
     private String creatorUid;
+    private String blockerUid;
     private String avatarTimestamp;
     private List<String> membersUid;
 
@@ -34,6 +35,14 @@ public class ChatsDocument {
 
     public void setCreatorUid(String creatorUid) {
         this.creatorUid = creatorUid;
+    }
+
+    public String getBlockerUid() {
+        return blockerUid;
+    }
+
+    public void setBlockerUid(String blockerUid) {
+        this.blockerUid = blockerUid;
     }
 
     public String getAvatarTimestamp() {

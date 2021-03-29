@@ -5,10 +5,15 @@ import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.InputType;
+import android.view.MenuItem;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.DataSource;
@@ -40,12 +45,27 @@ public class ViewAccountActivity extends BaseActivity {
     private MaterialButton mChatButton;
 
     private String mOtherUid;
+    private final ActivityResultLauncher<Intent> mActivityLauncher;
+
+    public ViewAccountActivity() {
+        mActivityLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                });
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_account);
         setTitle(getString(R.string.activity_view_account_title));
+
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setDisplayShowHomeEnabled(true);
+        }
+
         setReference();
         setDefault();
         loadData();
@@ -75,7 +95,7 @@ public class ViewAccountActivity extends BaseActivity {
                 .addOnCompleteListener(this::onGetUsersDocumentComplete);
     }
 
-    private void onGetUsersDocumentComplete(Task<DocumentSnapshot> task) {
+    private void onGetUsersDocumentComplete(@NonNull Task<DocumentSnapshot> task) {
         if (!task.isSuccessful() || task.getResult() == null) {
             Utils.logTaskException(TAG, task);
             return;
@@ -110,10 +130,21 @@ public class ViewAccountActivity extends BaseActivity {
         Map<String, String> othersUsername = new HashMap<>();
         othersUsername.put(mOtherUid, otherUsername.toString());
         Intent intent = new Intent(this, ChatActivity.class);
+        intent.putExtra(Constants.EXTRA_AUTHENTICATED, true);
         intent.putExtra(Constants.EXTRA_CHAT_TYPE, Constants.CHAT_TYPE_SINGLE);
         intent.putExtra(Constants.EXTRA_OTHER_UID, mOtherUid);
         intent.putExtra(Constants.EXTRA_OTHERS_USERNAME, (Serializable) othersUsername);
-        startActivity(intent);
+        mActivityLauncher.launch(intent);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int itemId = item.getItemId();
+        if (android.R.id.home == itemId) {
+            finish();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override

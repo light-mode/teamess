@@ -98,6 +98,7 @@ public class GroupFragment extends Fragment {
     private final String mCurrentUid;
     private final List<Member> mMembers;
     private final ActivityResultLauncher<Intent> mCameraLauncher;
+    private final ActivityResultLauncher<Intent> mActivityLauncher;
     private final ActivityResultLauncher<Intent> mGetContentLauncher;
     private final ActivityResultLauncher<String[]> mRequestPermissionLauncher;
     private final ItemTouchHelper mItemTouchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.UP | ItemTouchHelper.DOWN | ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
@@ -163,6 +164,10 @@ public class GroupFragment extends Fragment {
         mRequestPermissionLauncher = registerForActivityResult(
                 new ActivityResultContracts.RequestMultiplePermissions(),
                 this::onRequestPermissionReturn);
+        mActivityLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                });
     }
 
     @Nullable
@@ -327,7 +332,10 @@ public class GroupFragment extends Fragment {
                             .into(new CustomTarget<Drawable>() {
                                 @Override
                                 public void onResourceReady(@NonNull Drawable resource, @Nullable Transition<? super Drawable> transition) {
-                                    String username = uid.equals(mCurrentUid) ? "You" : mOthersUsername.get(uid);
+                                    if (getContext() == null) {
+                                        return;
+                                    }
+                                    String username = uid.equals(mCurrentUid) ? getString(R.string.you_capital) : mOthersUsername.get(uid);
                                     Member member = new Member(uid, username, resource);
                                     mMembers.add(member);
                                     mAdapter.notifyItemInserted(mMembers.size());
@@ -384,8 +392,7 @@ public class GroupFragment extends Fragment {
     }
 
     private void onAvatarImageViewClick() {
-        if (mChooseImageButton.getVisibility() == View.INVISIBLE
-                && mTakePhotoButton.getVisibility() == View.INVISIBLE) {
+        if (mChooseImageButton.getVisibility() == View.INVISIBLE && mTakePhotoButton.getVisibility() == View.INVISIBLE) {
             mChooseImageButton.setVisibility(View.VISIBLE);
             mTakePhotoButton.setVisibility(View.VISIBLE);
         } else {
@@ -451,7 +458,7 @@ public class GroupFragment extends Fragment {
                 }).into(mAvatarImageView);
     }
 
-    private void onGetImageLauncherReturn(ActivityResult result) {
+    private void onGetImageLauncherReturn(@NonNull ActivityResult result) {
         if (result.getResultCode() == RESULT_CANCELED || result.getData() == null) {
             return;
         }
@@ -586,16 +593,17 @@ public class GroupFragment extends Fragment {
     private void addGroupCreatedMessage() {
         String content = mCurrentUid + Constants.GROUP_CREATED + mChatName;
         List<String> membersUid = mMembers.stream().map(Member::getUid).collect(Collectors.toList());
-        Utils.addSystemChatsMessagesDocument(TAG, mChatId, content, membersUid, () -> {
+        Utils.addSystemChatsMessagesDocument(TAG, mChatId, Constants.CHAT_TYPE_GROUP, content, membersUid, () -> {
             Map<String, String> othersUsername = new HashMap<>();
             for (Member member : mMembers) {
                 othersUsername.put(member.getUid(), member.getUsername());
             }
             Intent intent = new Intent(mActivity, ChatActivity.class);
+            intent.putExtra(Constants.EXTRA_AUTHENTICATED, true);
             intent.putExtra(Constants.EXTRA_CHAT_ID, mChatId);
             intent.putExtra(Constants.EXTRA_CHAT_TYPE, Constants.CHAT_TYPE_GROUP);
             intent.putExtra(Constants.EXTRA_OTHERS_USERNAME, (Serializable) othersUsername);
-            startActivity(intent);
+            mActivityLauncher.launch(intent);
             mActivity.finish();
         });
     }
@@ -627,7 +635,7 @@ public class GroupFragment extends Fragment {
                 return;
             }
             String content = mCurrentUid + Constants.USER_ADDED + mChangeMember.getUid();
-            Utils.addSystemChatsMessagesDocument(TAG, mChatId, content, membersUid, () -> mActivity.finish());
+            Utils.addSystemChatsMessagesDocument(TAG, mChatId, Constants.CHAT_TYPE_GROUP, content, membersUid, () -> mActivity.finish());
         });
     }
 
@@ -642,14 +650,14 @@ public class GroupFragment extends Fragment {
                 return;
             }
             String content = mCurrentUid + Constants.USER_REMOVED + mChangeMember.getUid();
-            Utils.addSystemChatsMessagesDocument(TAG, mChatId, content, membersUid, () -> mActivity.finish());
+            Utils.addSystemChatsMessagesDocument(TAG, mChatId, Constants.CHAT_TYPE_GROUP, content, membersUid, () -> mActivity.finish());
         });
     }
 
     private void addGroupAvatarChangedMessage() {
         String content = mCurrentUid + Constants.GROUP_AVATAR_CHANGED;
         List<String> membersUid = mMembers.stream().map(Member::getUid).collect(Collectors.toList());
-        Utils.addSystemChatsMessagesDocument(TAG, mChatId, content, membersUid, this::updateChatsDocumentAvatarTimestamp);
+        Utils.addSystemChatsMessagesDocument(TAG, mChatId, Constants.CHAT_TYPE_GROUP, content, membersUid, this::updateChatsDocumentAvatarTimestamp);
     }
 
     private void updateChatsDocumentAvatarTimestamp() {
@@ -684,7 +692,7 @@ public class GroupFragment extends Fragment {
             }
             String content = mCurrentUid + Constants.GROUP_NAME_CHANGED + mChatName;
             List<String> membersUid = mMembers.stream().map(Member::getUid).collect(Collectors.toList());
-            Utils.addSystemChatsMessagesDocument(TAG, mChatId, content, membersUid, () -> {
+            Utils.addSystemChatsMessagesDocument(TAG, mChatId, Constants.CHAT_TYPE_GROUP, content, membersUid, () -> {
                 mProgressBar.setVisibility(View.INVISIBLE);
                 Toast.makeText(mContext, getString(R.string.update_success), Toast.LENGTH_LONG).show();
             });

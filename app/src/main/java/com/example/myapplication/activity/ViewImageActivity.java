@@ -18,6 +18,7 @@ public class ViewImageActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_image);
+        setTitle(getIntent().getStringExtra(Constants.EXTRA_IMAGE_ID));
 
         ActionBar actionBar = getSupportActionBar();
         if (actionBar == null) {

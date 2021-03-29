@@ -1,10 +1,12 @@
 package com.example.myapplication.activity;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.preference.PreferenceManager;
 
 import com.example.myapplication.R;
 import com.example.myapplication.utilities.Constants;
@@ -25,10 +27,17 @@ public class EntryActivity extends AppCompatActivity {
         if (currentUser == null) {
             startActivity(new Intent(EntryActivity.this, SignInActivity.class));
             finish();
-        } else {
-            Utils.getUsersRef().document(currentUser.getUid()).get()
-                    .addOnCompleteListener(this::onGetUsersDocumentComplete);
+            return;
         }
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean usernameSet = sharedPreferences.getBoolean(getString(R.string.pref_username_set), false);
+        if (usernameSet) {
+            startActivity(new Intent(this, MainActivity.class));
+            finish();
+            return;
+        }
+        Utils.getUsersRef().document(currentUser.getUid()).get()
+                .addOnCompleteListener(this::onGetUsersDocumentComplete);
     }
 
     private void onGetUsersDocumentComplete(@NonNull Task<DocumentSnapshot> task) {
@@ -41,6 +50,9 @@ public class EntryActivity extends AppCompatActivity {
             intent = new Intent(this, UserActivity.class);
             intent.putExtra(Constants.EXTRA_USERNAME_NOT_SET, true);
         } else {
+            SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(this).edit();
+            editor.putBoolean(getString(R.string.pref_username_set), true);
+            editor.apply();
             intent = new Intent(this, MainActivity.class);
         }
         startActivity(intent);

@@ -26,9 +26,9 @@ public class CreateCredentialsDialog extends DialogFragment {
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
         return new AlertDialog.Builder(requireContext())
                 .setView(R.layout.dialog_create_credentials)
-                .setNegativeButton(R.string.dialog_create_credentials_positive_button_text,
+                .setNegativeButton(R.string.dialog_create_credentials_negative_button_text,
                         (dialog, which) -> mImplementer.onDialogReturn(TAG, Dialog.BUTTON_NEGATIVE))
-                .setPositiveButton(R.string.dialog_create_credentials_negative_button_text,
+                .setPositiveButton(R.string.dialog_create_credentials_positive_button_text,
                         (dialog, which) -> mImplementer.onDialogReturn(TAG, Dialog.BUTTON_POSITIVE))
                 .create();
     }

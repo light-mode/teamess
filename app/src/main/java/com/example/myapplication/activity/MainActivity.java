@@ -9,6 +9,8 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.SearchView;
 import androidx.fragment.app.Fragment;
@@ -35,13 +37,17 @@ public class MainActivity extends BaseActivity {
     public static final String TAG = "MainActivity";
 
     private SearchView mSearchView;
-    private MainFragment mMainFragment;
     private SearchFragment mSearchFragment;
 
     private final String mCurrentUid;
+    private final ActivityResultLauncher<Intent> mActivityLauncher;
 
     public MainActivity() {
         mCurrentUid = Utils.getCurrentUid();
+        mActivityLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                });
     }
 
     @Override
@@ -53,10 +59,13 @@ public class MainActivity extends BaseActivity {
 
     private void setDefault() {
         FragmentManager fragmentManager = getSupportFragmentManager();
+        Fragment mainFragment = fragmentManager.findFragmentById(R.id.activity_main_fragment_container_view_main);
         FragmentTransaction transaction = fragmentManager.beginTransaction();
-        transaction.add(R.id.activity_main_fragment_container_view_main, new MainFragment(), MainFragment.TAG);
-        transaction.runOnCommit(() -> mMainFragment = (MainFragment) getSupportFragmentManager().
-                findFragmentById(R.id.activity_main_fragment_container_view_main));
+        if (mainFragment == null) {
+            transaction.add(R.id.activity_main_fragment_container_view_main, new MainFragment(), MainFragment.TAG);
+        } else {
+            transaction.show(mainFragment);
+        }
         transaction.commit();
     }
 
@@ -153,7 +162,7 @@ public class MainActivity extends BaseActivity {
         Fragment mainFragment = fragmentManager.findFragmentById(R.id.activity_main_fragment_container_view_main);
         Fragment searchFragment = fragmentManager.findFragmentById(R.id.activity_main_fragment_container_view_search);
         FragmentTransaction transaction = fragmentManager.beginTransaction();
-        if (mainFragment != null && mainFragment.isVisible()) {
+        if (mainFragment != null) {
             transaction.hide(mainFragment);
         }
         if (searchFragment == null) {
@@ -174,7 +183,7 @@ public class MainActivity extends BaseActivity {
         Fragment searchFragment = fragmentManager.findFragmentById(R.id.activity_main_fragment_container_view_search);
         Fragment mainFragment = fragmentManager.findFragmentById(R.id.activity_main_fragment_container_view_main);
         FragmentTransaction transaction = fragmentManager.beginTransaction();
-        if (searchFragment != null && searchFragment.isVisible()) {
+        if (searchFragment != null) {
             transaction.hide(searchFragment);
         }
         if (mainFragment == null) {
@@ -182,8 +191,6 @@ public class MainActivity extends BaseActivity {
         } else {
             transaction.show(mainFragment);
         }
-        transaction.runOnCommit(() -> mMainFragment = (MainFragment) getSupportFragmentManager().
-                findFragmentById(R.id.activity_main_fragment_container_view_main));
         transaction.commit();
         return true;
     }
@@ -196,8 +203,9 @@ public class MainActivity extends BaseActivity {
             return true;
         } else if (R.id.menu_main_item_create_group == itemId) {
             Intent intent = new Intent(this, GroupActivity.class);
+            intent.putExtra(Constants.EXTRA_AUTHENTICATED, true);
             intent.putExtra(Constants.EXTRA_MODE, Constants.MODE_CREATE_GROUP);
-            startActivity(intent);
+            mActivityLauncher.launch(intent);
             return true;
         }
         return super.onOptionsItemSelected(item);

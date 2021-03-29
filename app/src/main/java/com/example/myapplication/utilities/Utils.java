@@ -4,14 +4,19 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.preference.PreferenceManager;
+import android.util.DisplayMetrics;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.biometric.BiometricManager;
+import androidx.fragment.app.FragmentActivity;
 
+import com.example.myapplication.R;
 import com.example.myapplication.document.ChatsMessagesDocument;
 import com.example.myapplication.document.UsersChatsDocument;
 import com.google.android.gms.tasks.Task;
@@ -25,6 +30,8 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.stream.Collectors;
 
 public class Utils {
     public static boolean isAuthenticateAvailable(Context context) {
@@ -38,9 +45,9 @@ public class Utils {
         return biometricManager.canAuthenticate(biometricAuthenticators) == BiometricManager.BIOMETRIC_SUCCESS;
     }
 
-    public static boolean isPasswordRequired(Context context) {
+    public static boolean isAppLockRequired(Context context) {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        return sharedPreferences.getBoolean(Constants.KEY_APP_LOCK_REQUIRED, false);
+        return sharedPreferences.getBoolean(context.getString(R.string.pref_app_lock_key), false);
     }
 
     public static void simulateHomeButtonClick(@NonNull Activity activity) {
@@ -104,7 +111,7 @@ public class Utils {
         Log.e(tag, task.getException() == null ? "" : task.getException().getMessage());
     }
 
-    public static void updateUsersDocumentStatus(String status) {
+    public static void updateCurrentUsersDocumentStatus(String status) {
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser != null) {
             getUsersRef().document(currentUser.getUid()).update(Constants.FIELD_STATUS, status);
@@ -120,7 +127,7 @@ public class Utils {
         return currentUser.getUid();
     }
 
-    public static void addSystemChatsMessagesDocument(String TAG, String chatId, String content, @NonNull List<String> membersUid, Runnable callback) {
+    public static void addSystemChatsMessagesDocument(String TAG, String chatId, String chatType, String content, @NonNull List<String> membersUid, Runnable callback) {
         WriteBatch batch = FirebaseFirestore.getInstance().batch();
         Timestamp now = Timestamp.now();
         String id = now.toString();
@@ -132,14 +139,23 @@ public class Utils {
         chatsMessagesDocument.setTimestamp(timestamp);
         chatsMessagesDocument.setType(Constants.MESSAGE_TYPE_SYSTEM);
         batch.set(Utils.getChatsMessagesRef(chatId).document(id), chatsMessagesDocument);
-
         UsersChatsDocument usersChatsDocument = new UsersChatsDocument();
         usersChatsDocument.setId(chatId);
+        usersChatsDocument.setType(chatType);
         usersChatsDocument.setLastMessageContent(content);
-        usersChatsDocument.setType(Constants.CHAT_TYPE_GROUP);
         usersChatsDocument.setLastMessageTimestamp(timestamp);
         usersChatsDocument.setLastMessageType(Constants.MESSAGE_TYPE_SYSTEM);
+        String currentUid = getCurrentUid();
         for (String uid : membersUid) {
+            if (Constants.CHAT_TYPE_SINGLE.equals(chatType)) {
+                if (uid.equals(currentUid)) {
+                    String otherUid = membersUid.stream().filter(o -> !o.equals(currentUid))
+                            .collect(Collectors.toList()).get(0);
+                    usersChatsDocument.setOtherUid(otherUid);
+                } else {
+                    usersChatsDocument.setOtherUid(currentUid);
+                }
+            }
             batch.set(Utils.getUsersChatsRef(uid).document(chatId), usersChatsDocument);
         }
 
@@ -148,7 +164,21 @@ public class Utils {
                 logTaskException(TAG, task);
                 return;
             }
-            callback.run();
+            if (callback != null) {
+                callback.run();
+            }
         });
+    }
+
+    public static void setLocale(@NonNull FragmentActivity activity) {
+        String defaultLanguageCode = activity.getString(R.string.pref_language_code_english);
+        String languageCode = PreferenceManager.getDefaultSharedPreferences(activity)
+                .getString(activity.getString(R.string.pref_language_key), defaultLanguageCode);
+        Locale locale = new Locale(languageCode);
+        Locale.setDefault(locale);
+        Configuration config = new Configuration();
+        config.locale = locale;
+        activity.getBaseContext().getResources()
+                .updateConfiguration(config, activity.getBaseContext().getResources().getDisplayMetrics());
     }
 }

@@ -9,6 +9,8 @@ import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -34,6 +36,15 @@ public class SearchFragment extends Fragment implements SearchResultAdapter.OnIt
     public ProgressBar mProgressBar;
     public RecyclerView mRecyclerView;
 
+    private final ActivityResultLauncher<Intent> mActivityLauncher;
+
+    public SearchFragment() {
+        mActivityLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                });
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -48,7 +59,7 @@ public class SearchFragment extends Fragment implements SearchResultAdapter.OnIt
         setDefault();
     }
 
-    private void setReference(View view) {
+    private void setReference(@NonNull View view) {
         mTextView = view.findViewById(R.id.fragment_search_text_view);
         mProgressBar = view.findViewById(R.id.fragment_search_progress_bar);
         mRecyclerView = view.findViewById(R.id.fragment_search_recycler_view);
@@ -72,8 +83,9 @@ public class SearchFragment extends Fragment implements SearchResultAdapter.OnIt
         }
         if (activity instanceof MainActivity) {
             Intent intent = new Intent(getActivity(), ViewAccountActivity.class);
+            intent.putExtra(Constants.EXTRA_AUTHENTICATED, true);
             intent.putExtra(Constants.EXTRA_OTHER_UID, uid);
-            startActivity(intent);
+            mActivityLauncher.launch(intent);
         } else if (activity instanceof GroupActivity) {
             ((GroupActivity) activity).onSearchResultSelect(uid, username, avatar);
         } else {

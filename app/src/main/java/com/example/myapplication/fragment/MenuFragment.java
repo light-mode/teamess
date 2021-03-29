@@ -3,18 +3,23 @@ package com.example.myapplication.fragment;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
+import androidx.preference.PreferenceManager;
 
 import com.example.myapplication.R;
+import com.example.myapplication.activity.SettingActivity;
 import com.example.myapplication.activity.SignInActivity;
 import com.example.myapplication.activity.UserActivity;
 import com.example.myapplication.utilities.Constants;
@@ -25,6 +30,14 @@ public class MenuFragment extends Fragment {
     public static final String TAG = "MenuFragment";
 
     private FragmentActivity mActivity;
+    private final ActivityResultLauncher<Intent> mActivityLauncher;
+
+    public MenuFragment() {
+        mActivityLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                });
+    }
 
     @Nullable
     @Override
@@ -42,12 +55,22 @@ public class MenuFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         Button accountButton = view.findViewById(R.id.fragment_menu_button_account);
         accountButton.setOnClickListener(v -> onAccountButtonClick());
+        Button settingButton = view.findViewById(R.id.fragment_menu_button_setting);
+        settingButton.setOnClickListener(v -> onSettingButtonClick());
         Button logoutButton = view.findViewById(R.id.fragment_menu_button_logout);
         logoutButton.setOnClickListener(v -> onLogoutButtonClick());
     }
 
     private void onAccountButtonClick() {
-        startActivity(new Intent(mActivity, UserActivity.class));
+        Intent intent = new Intent(mActivity, UserActivity.class);
+        intent.putExtra(Constants.EXTRA_AUTHENTICATED, true);
+        mActivityLauncher.launch(intent);
+    }
+
+    private void onSettingButtonClick() {
+        Intent intent = new Intent(mActivity, SettingActivity.class);
+        intent.putExtra(Constants.EXTRA_AUTHENTICATED, true);
+        mActivityLauncher.launch(intent);
     }
 
     private void onLogoutButtonClick() {
@@ -61,7 +84,10 @@ public class MenuFragment extends Fragment {
     }
 
     private void onLogoutDialogPositiveButtonClick(DialogInterface dialog, int which) {
-        Utils.updateUsersDocumentStatus(Constants.STATUS_OFFLINE);
+        SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(mActivity).edit();
+        editor.putBoolean(getString(R.string.pref_username_set), false);
+        editor.apply();
+        Utils.updateCurrentUsersDocumentStatus(Constants.STATUS_OFFLINE);
         FirebaseAuth.getInstance().signOut();
         startActivity(new Intent(mActivity, SignInActivity.class));
         mActivity.finish();

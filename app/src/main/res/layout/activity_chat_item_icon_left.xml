@@ -7,7 +7,7 @@
     <TextView
         android:id="@+id/activity_chat_item_text_view_timestamp"
         style="@style/timestamp_left"
-        app:layout_constraintLeft_toRightOf="@id/activity_chat_item_avatar_wrapper"
+        app:layout_constraintLeft_toLeftOf="@id/activity_chat_item_icon_view_content"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
@@ -20,7 +20,7 @@
         android:id="@+id/activity_chat_item_avatar_wrapper"
         style="@style/avatar_wrapper_left"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toBottomOf="@id/activity_chat_item_text_view_timestamp">
 
         <ImageView
             android:id="@+id/activity_chat_item_image_view_avatar"

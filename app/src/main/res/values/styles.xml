@@ -15,6 +15,7 @@
         <item name="android:layout_marginStart">4dp</item>
         <item name="cardPreventCornerOverlap">false</item>
         <item name="shapeAppearanceOverlay">@style/circle</item>
+        <item name="cardElevation">0dp</item>
     </style>
 
     <style name="avatar_wrapper_right">
@@ -23,6 +24,7 @@
         <item name="android:layout_marginEnd">4dp</item>
         <item name="cardPreventCornerOverlap">false</item>
         <item name="shapeAppearanceOverlay">@style/circle</item>
+        <item name="cardElevation">0dp</item>
     </style>
 
     <style name="avatar">
@@ -42,6 +44,7 @@
         <item name="android:paddingEnd">4dp</item>
         <item name="android:textColor">@color/design_default_color_on_primary</item>
         <item name="android:textSize">12sp</item>
+        <item name="android:visibility">gone</item>
     </style>
 
     <style name="timestamp_right">
@@ -57,6 +60,7 @@
         <item name="android:gravity">center_vertical</item>
         <item name="android:textColor">@color/black</item>
         <item name="android:textSize">12sp</item>
+        <item name="android:visibility">gone</item>
     </style>
 
     <style name="seen_left">
@@ -72,6 +76,7 @@
         <item name="android:textColor">@color/design_default_color_on_primary</item>
         <item name="android:textSize">12sp</item>
         <item name="android:maxLines">1</item>
+        <item name="android:visibility">gone</item>
     </style>
 
     <style name="seen_right">
@@ -87,6 +92,7 @@
         <item name="android:textColor">@color/black</item>
         <item name="android:textSize">12sp</item>
         <item name="android:maxLines">1</item>
+        <item name="android:visibility">gone</item>
     </style>
 
     <style name="content_text_wrapper_left">
@@ -120,6 +126,7 @@
         <item name="android:backgroundTint">@color/teal_200</item>
         <item name="android:padding">4dp</item>
         <item name="android:textColor">@color/black</item>
+        <item name="android:layout_gravity">end</item>
     </style>
 
     <style name="content_file_left">
@@ -146,6 +153,7 @@
         <item name="android:backgroundTint">@color/teal_200</item>
         <item name="android:padding">4dp</item>
         <item name="android:textColor">@color/black</item>
+        <item name="android:layout_gravity">end</item>
     </style>
 
     <style name="content_icon_left">
@@ -202,6 +210,8 @@
         <item name="fabSize">mini</item>
         <item name="borderWidth">0dp</item>
         <item name="tint">@color/design_default_color_on_primary</item>
+        <item name="android:visibility">gone</item>
+        <item name="elevation">0dp</item>
     </style>
 
     <style name="button_download_right">
@@ -212,6 +222,8 @@
         <item name="fabSize">mini</item>
         <item name="borderWidth">0dp</item>
         <item name="tint">@color/black</item>
+        <item name="android:visibility">gone</item>
+        <item name="elevation">0dp</item>
     </style>
 
     <style name="button_copy_left">
@@ -222,6 +234,8 @@
         <item name="fabSize">mini</item>
         <item name="borderWidth">0dp</item>
         <item name="tint">@color/design_default_color_on_primary</item>
+        <item name="android:visibility">gone</item>
+        <item name="elevation">0dp</item>
     </style>
 
     <style name="button_copy_right">
@@ -232,13 +246,8 @@
         <item name="fabSize">mini</item>
         <item name="borderWidth">0dp</item>
         <item name="tint">@color/black</item>
-    </style>
-
-    <style name="content_hidden">
-        <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">0dp</item>
         <item name="android:visibility">gone</item>
-        <item name="android:enabled">false</item>
+        <item name="elevation">0dp</item>
     </style>
 
     <style name="fab">
@@ -268,5 +277,40 @@
         <item name="fabSize">mini</item>
         <item name="borderWidth">0dp</item>
         <item name="tint">@color/black</item>
+        <item name="android:visibility">gone</item>
+        <item name="elevation">0dp</item>
+    </style>
+
+    <style name="button_fullscreen_left">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:backgroundTint">@color/design_default_color_primary</item>
+        <item name="android:src">@drawable/ic_baseline_fullscreen_24</item>
+        <item name="fabSize">mini</item>
+        <item name="borderWidth">0dp</item>
+        <item name="tint">@color/design_default_color_on_primary</item>
+        <item name="android:visibility">gone</item>
+        <item name="elevation">0dp</item>
+    </style>
+
+    <style name="button_fullscreen_right">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:backgroundTint">@color/teal_200</item>
+        <item name="android:src">@drawable/ic_baseline_fullscreen_24</item>
+        <item name="fabSize">mini</item>
+        <item name="borderWidth">0dp</item>
+        <item name="tint">@color/black</item>
+        <item name="android:visibility">gone</item>
+        <item name="elevation">0dp</item>
+    </style>
+
+    <style name="edit_text_language">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:focusable">false</item>
+        <item name="android:focusableInTouchMode">false</item>
+        <item name="android:inputType">none</item>
+        <item name="android:cursorVisible">false</item>
     </style>
 </resources>

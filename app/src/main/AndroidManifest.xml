@@ -16,27 +16,41 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MyApplication">
-        <activity android:name=".activity.ViewImageActivity" />
+        <activity
+            android:name=".activity.ViewImageActivity"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".activity.GroupActivity"
+            android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustNothing" />
         <activity
             android:name=".activity.ChatActivity"
+            android:screenOrientation="portrait"
             android:windowSoftInputMode="stateHidden|adjustResize" />
-        <activity android:name=".activity.ViewAccountActivity" />
-        <activity android:name=".activity.SettingActivity" />
-        <activity android:name=".activity.UserActivity" />
-        <activity android:name=".activity.SignInActivity" />
+        <activity
+            android:name=".activity.ViewAccountActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.SettingActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.UserActivity"
+            android:screenOrientation="portrait" />
+        <activity
+            android:name=".activity.SignInActivity"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".activity.EntryActivity"
-            android:noHistory="true">
+            android:noHistory="true"
+            android:screenOrientation="portrait">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activity.MainActivity" />
+        <activity
+            android:name=".activity.MainActivity"
+            android:screenOrientation="portrait" />
     </application>
-
 </manifest>

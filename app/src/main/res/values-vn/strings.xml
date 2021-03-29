@@ -1,0 +1,129 @@
+<resources>
+    <string name="activity_sign_in_title">Chọn ngôn ngữ</string>
+    <string name="activity_sign_in_button_continue_text">Tiếp tục</string>
+
+    <string name="biometric_prompt_title">Khóa ứng dụng</string>
+    <string name="biometric_prompt_subtitle_fingerprint">Nhập mã khóa hoặc dùng dấu vân tay để tiếp tục</string>
+    <string name="biometric_prompt_subtitle">Nhập mã khóa để tiếp tục</string>
+
+    <string name="activity_setting_title">Cài đặt</string>
+
+    <string name="activity_user_title">Thông tin tài khoản</string>
+    <string name="activity_user_text_input_layout_username_error_lack">Cung cấp tên tài khoản để bạn bè có thể tìm thấy bạn</string>
+    <string name="activity_user_text_input_layout_username_error_min">Tên tài khoản phải chứa ít nhất %1$d kí tự</string>
+    <string name="activity_user_text_input_layout_username_error_max">Tên tài khoản quá dài</string>
+    <string name="activity_user_text_input_layout_username_hint">Tên tài khoản</string>
+    <string name="activity_user_text_input_layout_dob_hint">Ngày sinh</string>
+    <string name="activity_user_text_input_layout_bio_hint">Mô tả</string>
+    <string name="activity_user_button_save_text_save">Lưu</string>
+    <string name="activity_user_button_save_text_continue">Tiếp tục</string>
+
+    <string name="dialog_create_credentials_text_view_1_text">Để sử dụng vân tay để mở khóa điện thoại hoặc xác thực danh tính của bạn trong các ứng dụng, bạn sẽ cần:</string>
+    <string name="dialog_create_credentials_text_view_2_text">1. Đặt kiểu khóa màn hình bảo mật.</string>
+    <string name="dialog_create_credentials_text_view_3_text">2. Thêm ít nhất 1 vân tay.</string>
+    <string name="dialog_create_credentials_positive_button_text">Tiếp tục</string>
+    <string name="dialog_create_credentials_negative_button_text">Hủy</string>
+
+    <string name="activity_group_title_create">Tạo nhóm mới</string>
+    <string name="activity_group_title_view">Thông tin nhóm</string>
+    <string name="activity_group_title_edit">Thông tin nhóm</string>
+    <string name="activity_group_title_add_member">Thêm thành viên mới</string>
+    <string name="activity_group_title_remove_member">Xóa bỏ một thành viên</string>
+
+    <string name="fragment_menu_button_account_text">Tài khoản</string>
+    <string name="fragment_menu_button_setting_text">Cài đặt</string>
+    <string name="fragment_menu_button_logout_text">Đăng xuất</string>
+
+    <string name="dialog_block_title">Chặn %1$s?</string>
+    <string name="dialog_block_message">Bạn sẽ không còn nhận được tin nhắn từ %1$s</string>
+    <string name="dialog_block_positive_button_text">Chặn</string>
+    <string name="dialog_block_negative_button_text">Hủy</string>
+
+    <string name="dialog_unblock_title">Bỏ chặn %1$s?</string>
+    <string name="dialog_unblock_message">Bạn sẽ bắt đầu nhận được tin nhắn từ %1$s</string>
+    <string name="dialog_unblock_positive_button_text">Bỏ chặn</string>
+    <string name="dialog_unblock_negative_button_text">Hủy</string>
+
+    <string name="dialog_leave_group_title">Rời khỏi %1$s?</string>
+    <string name="dialog_leave_group_message">Bạn sẽ không còn nhận được tin nhắn từ nhóm này</string>
+    <string name="dialog_leave_group_positive_button_text">Rời khỏi</string>
+    <string name="dialog_leave_group_negative_button_text">Hủy</string>
+
+    <string name="dialog_delete_message_title">Xóa tin nhắn?</string>
+    <string name="dialog_delete_message_message">Thao tác này không thể hoàn tác</string>
+    <string name="dialog_delete_message_positive_button_text">Xóa</string>
+    <string name="dialog_delete_message_negative_button_text">Hủy</string>
+
+    <string name="menu_main_item_search_title">Tìm kiếm</string>
+    <string name="menu_main_item_create_group_title">Tạo nhóm</string>
+
+    <string name="menu_chat_item_add_member_title">Thêm thành viên mới</string>
+    <string name="menu_chat_item_remove_member_title">Xóa bỏ một thành viên</string>
+    <string name="menu_chat_item_info_title">Chi tiết</string>
+    <string name="menu_chat_item_leave_title">Rời khỏi</string>
+    <string name="menu_chat_item_block_title">Chặn</string>
+    <string name="menu_chat_item_unblock_title">Bỏ chặn</string>
+
+    <string name="activity_view_account_title">Thông tin tài khoản</string>
+    <string name="activity_view_account_text_input_layout_username_hint">Tên tài khoản</string>
+    <string name="activity_view_account_button_chat_text">Nhắn tin</string>
+
+    <string name="fragment_search_text_view_text_default">Kết quả tìm kiếm của bạn sẽ hiển thị ở đây</string>
+    <string name="fragment_search_text_view_text_no_result">Không có kết quả nào được tìm thấy</string>
+
+    <string name="activity_chat_edit_text_message_hint">Nhập tin nhắn…</string>
+
+    <string name="activity_group_text_input_layout_group_name_hint">Tên nhóm</string>
+    <string name="activity_group_text_input_layout_group_name_error_lack">Bạn phải cung câp tên nhóm</string>
+    <string name="activity_group_text_input_layout_group_name_error_min">Tên nhóm phải chứa ít nhất %1$d kí tự</string>
+    <string name="activity_group_text_input_layout_group_name_error_max">Tên nhóm quá dài</string>
+    <string name="activity_group_text_input_layout_group_name_error_contain_underscore">Tên nhóm không thể chứa kí tự _</string>
+    <string name="activity_group_text_view_members">Thành viên</string>
+    <string name="activity_group_text_input_layout_members_suggest">Tìm kiếm thành viên mới và thêm họ vào đây</string>
+    <string name="activity_group_button_save_text">Lưu</string>
+
+    <string name="system_message_format_group_created">%1$s đã tạo nhóm này</string>
+    <string name="system_message_format_user_added">%1$s đã thêm %2$s vào nhóm</string>
+    <string name="system_message_format_user_removed">%1$s đã xóa %2$s khỏi nhóm</string>
+    <string name="system_message_format_user_left">%1$s đã rời khỏi nhóm</string>
+    <string name="system_message_format_group_name_changed">%1$s đã thay đổi tên nhóm thành %2$s</string>
+    <string name="system_message_format_group_avatar_changed">%1$s đã thay đổi ảnh đại diện nhóm</string>
+    <string name="system_message_format_blocked">%1$s đã chặn %2$s</string>
+    <string name="system_message_format_unblocked">%1$s đã bỏ chặn %2$s</string>
+
+    <string name="sent_an_icon"><i>[Đã gửi một biểu tượng]</i></string>
+    <string name="sent_an_image"><i>[Đã gửi một ảnh]</i></string>
+    <string name="sent_a_file"><i>[Đã gửi một tệp tin]</i></string>
+
+    <string name="delivered">Đã gửi</string>
+    <string name="seen">Đã xem</string>
+    <string name="seen_by">Đã xem bởi</string>
+    <string name="seen_by_everyone">Đã xem bởi mọi người</string>
+
+    <string name="fragment_group_add_member_message">%1$s sẽ được thêm vào nhóm</string>
+    <string name="fragment_group_remove_member_message">%1$s sẽ bị xóa khỏi nhóm</string>
+
+    <string name="update_success">Thông tin được cập nhật thành công</string>
+
+    <string name="error_select_existed_member">Hãy chọn một người dùng khác</string>
+    <string name="error_upload_file_unknown">Tệp tin được chọn không được hỗ trợ</string>
+    <string name="error_upload_file_limit">Bạn chỉ có thể tải lên tệp tin có dung lượng dưới 15MB</string>
+    <string name="error_invalid_dob">Ngày đã chọn không hợp lệ</string>
+
+    <string name="dialog_logout_title">Bạn có chắc muốn đăng xuất?</string>
+    <string name="dialog_logout_positive_button_text">Đăng xuất</string>
+    <string name="dialog_logout_negative_button_text">Hủy</string>
+
+    <string name="you">bạn</string>
+    <string name="you_capital">Bạn</string>
+    <string name="default_message_deleted"><i>Tin nhăn đã bị xóa</i></string>
+    <string name="copied_to_clipboard">Đã copy vào khay nhớ tạm</string>
+
+    <string name="pref_app_lock_title">Khóa ứng dụng</string>
+
+    <string name="pref_language_title">Ngôn ngữ</string>
+    <string name="pref_language_dialog_title">Thay đổi ngôn ngữ</string>
+    <string name="pref_language_button_negative_text">Hủy</string>
+
+    <string name="pref_24_hour_format_title">Dùng định dạng 24 giờ</string>
+</resources>

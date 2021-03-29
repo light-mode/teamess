@@ -41,7 +41,6 @@ public class GroupActivity extends BaseActivity {
     private SearchFragment mSearchFragment;
 
     private String mMode;
-
     private final String mCurrentUid;
 
     public GroupActivity() {

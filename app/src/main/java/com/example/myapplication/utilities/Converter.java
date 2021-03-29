@@ -1,10 +1,14 @@
 package com.example.myapplication.utilities;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.preference.PreferenceManager;
+
+import com.example.myapplication.R;
 
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -13,7 +17,7 @@ import java.util.GregorianCalendar;
 import java.util.Locale;
 
 public class Converter {
-    public static String convertTimestampToString(String seconds) {
+    public static String convertTimestampToString(Context context, String seconds) {
         String pattern;
         long timestampInMillis = Long.parseLong(seconds) * 1000;
         Calendar calendar = new GregorianCalendar();
@@ -21,14 +25,16 @@ public class Converter {
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
+        boolean hourFormat24 = PreferenceManager.getDefaultSharedPreferences(context)
+                .getBoolean(context.getString(R.string.pref_24_hour_format_key), false);
         if (timestampInMillis >= calendar.getTimeInMillis()) {
-            pattern = "hh:mm a";
+            pattern = hourFormat24 ? "HH:mm" : "hh:mm a";
         } else {
             calendar.add(Calendar.YEAR, -1);
             if (timestampInMillis > calendar.getTimeInMillis()) {
-                pattern = "MMM dd hh:mm a";
+                pattern = hourFormat24 ? "MMM dd hh:mm" : "MMM dd hh:mm a";
             } else {
-                pattern = "MMM dd, yyyy hh:mm a";
+                pattern = hourFormat24 ? "MMM dd, yyyy HH:mm" : "MMM dd, yyyy hh:mm a";
             }
         }
         return new SimpleDateFormat(pattern, Locale.ENGLISH).format(new Date(timestampInMillis));

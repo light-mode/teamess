@@ -7,7 +7,7 @@
     <TextView
         android:id="@+id/activity_chat_item_text_view_timestamp"
         style="@style/timestamp_left"
-        app:layout_constraintLeft_toRightOf="@id/activity_chat_item_avatar_wrapper"
+        app:layout_constraintLeft_toLeftOf="@id/activity_chat_item_content_image_wrapper"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
@@ -20,7 +20,7 @@
         android:id="@+id/activity_chat_item_avatar_wrapper"
         style="@style/avatar_wrapper_left"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="@id/activity_chat_item_content_image_wrapper">
 
         <ImageView
             android:id="@+id/activity_chat_item_image_view_avatar"
@@ -46,6 +46,13 @@
         style="@style/button_download_left"
         android:contentDescription="@string/none"
         app:layout_constraintBottom_toBottomOf="@id/activity_chat_item_content_image_wrapper"
+        app:layout_constraintLeft_toRightOf="@id/activity_chat_item_left_guideline" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/activity_chat_item_button_fullscreen"
+        style="@style/button_fullscreen_left"
+        android:contentDescription="@string/none"
+        app:layout_constraintBottom_toTopOf="@id/activity_chat_item_button_download"
         app:layout_constraintLeft_toRightOf="@id/activity_chat_item_left_guideline" />
 
     <androidx.constraintlayout.widget.Guideline

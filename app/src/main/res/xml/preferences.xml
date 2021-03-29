@@ -1,6 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
     <SwitchPreferenceCompat
-        app:key="app_lock"
-        app:title="App Lock" />
+        app:defaultValue="false"
+        app:icon="@drawable/ic_baseline_lock_24"
+        app:key="@string/pref_app_lock_key"
+        app:summaryOff="@string/pref_app_lock_summary_off"
+        app:summaryOn="@string/pref_app_lock_summary_on"
+        app:title="@string/pref_app_lock_title" />
+    <ListPreference
+        app:defaultValue="@string/pref_language_code_english"
+        app:dialogTitle="@string/pref_language_dialog_title"
+        app:entries="@array/language_names"
+        app:entryValues="@array/language_codes"
+        app:icon="@drawable/ic_baseline_language_24"
+        app:key="language"
+        app:negativeButtonText="@string/pref_language_button_negative_text"
+        app:summary="%s"
+        app:title="@string/pref_language_title" />
+    <SwitchPreferenceCompat
+        app:defaultValue="false"
+        app:icon="@drawable/ic_baseline_access_time_24"
+        app:key="@string/pref_24_hour_format_key"
+        app:summaryOff="@string/pref_24_hour_format_summary_off"
+        app:summaryOn="@string/pref_24_hour_format_summary_on"
+        app:title="@string/pref_24_hour_format_title" />
 </PreferenceScreen>
