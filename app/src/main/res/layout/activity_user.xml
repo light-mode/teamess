@@ -5,6 +5,8 @@
     android:id="@+id/activity_user_root_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
     tools:context=".activity.UserActivity">
 
     <com.google.android.material.card.MaterialCardView

@@ -69,10 +69,10 @@ public class UserActivity extends BaseActivity implements DatePickerDialog.OnDat
     private MaterialButton mSaveButton;
 
     private String mCurrentUid;
-    private UsersDocument mUsersDocument;
     private boolean mUsernameNotSet;
     private boolean mAvatarHasChanged;
     private boolean mDocumentHasChanged;
+    private UsersDocument mUsersDocument;
     private ActivityResultLauncher<Intent> mCameraLauncher;
     private ActivityResultLauncher<Intent> mGetContentLauncher;
     private final ActivityResultLauncher<Intent> mActivityLauncher;
@@ -89,14 +89,8 @@ public class UserActivity extends BaseActivity implements DatePickerDialog.OnDat
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_user);
         setTitle(getString(R.string.activity_user_title));
-
-        ActionBar actionBar = getSupportActionBar();
-        if (actionBar != null) {
-            actionBar.setDisplayHomeAsUpEnabled(true);
-            actionBar.setDisplayShowHomeEnabled(true);
-        }
-
         setReference();
+        setActionBar();
         setDefault();
         loadDocumentRelatedInfo();
     }
@@ -120,6 +114,17 @@ public class UserActivity extends BaseActivity implements DatePickerDialog.OnDat
         mGetContentLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 this::onGetImageLauncherReturn);
+    }
+
+    private void setActionBar() {
+        if (mUsernameNotSet) {
+            return;
+        }
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            actionBar.setDisplayShowHomeEnabled(true);
+        }
     }
 
     private void setDefault() {
@@ -248,7 +253,7 @@ public class UserActivity extends BaseActivity implements DatePickerDialog.OnDat
     private void onDobEditTextClick() {
         mUsernameEditText.clearFocus();
         mBioEditText.clearFocus();
-        if (mUsersDocument.getDob() == null) {
+        if (mUsersDocument == null || mUsersDocument.getDob() == null) {
             Calendar calendar = new GregorianCalendar();
             int year = calendar.get(Calendar.YEAR);
             int month = calendar.get(Calendar.MONTH);

@@ -110,6 +110,8 @@
     <string name="fragment_group_add_member_message">%1$s will be add to this group</string>
     <string name="fragment_group_remove_member_message">%1$s will be remove from this group</string>
 
+    <string name="fragment_chat_text_view_text">You don\'t have any conversation yet</string>
+
     <string name="update_success">Information updated successfully</string>
 
     <string name="error_select_existed_member">Please select another user</string>

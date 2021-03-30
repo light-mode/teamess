@@ -6,6 +6,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
@@ -38,6 +39,8 @@ import java.util.stream.Collectors;
 public class ChatFragment extends Fragment implements ChatAdapter.OnItemClickListener {
     public static final String TAG = "ChatFragment";
 
+    private TextView mTextView;
+
     private ChatAdapter mChatAdapter;
     private final String mCurrentUid;
     private final Map<String, String> mOthersUsername;
@@ -64,6 +67,7 @@ public class ChatFragment extends Fragment implements ChatAdapter.OnItemClickLis
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        mTextView = view.findViewById(R.id.fragment_chat_text_view);
         mChatAdapter = new ChatAdapter(getContext(), mUsersChatsDocuments, this);
         RecyclerView mRecyclerView = view.findViewById(R.id.fragment_chat_recycler_view);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -162,6 +166,7 @@ public class ChatFragment extends Fragment implements ChatAdapter.OnItemClickLis
     private void onUsersChatsDocumentAdded(UsersChatsDocument usersChatsDocument) {
         mUsersChatsDocuments.add(usersChatsDocument);
         mChatAdapter.notifyItemInserted(mUsersChatsDocuments.size());
+        mTextView.setVisibility(View.INVISIBLE);
     }
 
     private void onUsersChatsDocumentModified(UsersChatsDocument usersChatsDocument) {
@@ -179,6 +184,9 @@ public class ChatFragment extends Fragment implements ChatAdapter.OnItemClickLis
         mUsersChatsDocuments.remove(position);
         mChatAdapter.notifyItemRemoved(position);
         mChatAdapter.notifyItemRangeChanged(position, mUsersChatsDocuments.size());
+        if (mUsersChatsDocuments.isEmpty()) {
+            mTextView.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override

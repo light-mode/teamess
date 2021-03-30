@@ -103,6 +103,8 @@
     <string name="fragment_group_add_member_message">%1$s sẽ được thêm vào nhóm</string>
     <string name="fragment_group_remove_member_message">%1$s sẽ bị xóa khỏi nhóm</string>
 
+    <string name="fragment_chat_text_view_text">Bạn chưa có cuộc trò chuyện nào</string>
+
     <string name="update_success">Thông tin được cập nhật thành công</string>
 
     <string name="error_select_existed_member">Hãy chọn một người dùng khác</string>

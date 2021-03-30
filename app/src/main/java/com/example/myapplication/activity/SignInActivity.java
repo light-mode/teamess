@@ -79,8 +79,7 @@ public class SignInActivity extends AppCompatActivity implements LanguageAdapter
         mContinueButton.setEnabled(false);
         List<AuthUI.IdpConfig> providers = Arrays.asList(
                 new AuthUI.IdpConfig.PhoneBuilder().build(),
-                new AuthUI.IdpConfig.GoogleBuilder().build(),
-                new AuthUI.IdpConfig.EmailBuilder().build());
+                new AuthUI.IdpConfig.GoogleBuilder().build());
         Intent intent = AuthUI.getInstance().createSignInIntentBuilder()
                 .setAlwaysShowSignInMethodScreen(true)
                 .setIsSmartLockEnabled(false)
