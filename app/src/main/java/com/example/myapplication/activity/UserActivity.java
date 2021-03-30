@@ -52,6 +52,7 @@ import com.google.firebase.storage.StorageReference;
 import java.io.ByteArrayOutputStream;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.Objects;
 
 public class UserActivity extends BaseActivity implements DatePickerDialog.OnDateSetListener {
     public static final String TAG = "UserActivity";
@@ -247,14 +248,14 @@ public class UserActivity extends BaseActivity implements DatePickerDialog.OnDat
     private void onDobEditTextClick() {
         mUsernameEditText.clearFocus();
         mBioEditText.clearFocus();
-        if (mDobEditText.getText() == null) {
+        if (mUsersDocument.getDob() == null) {
             Calendar calendar = new GregorianCalendar();
             int year = calendar.get(Calendar.YEAR);
             int month = calendar.get(Calendar.MONTH);
             int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
             new DatePickerDialog(this, this, year, month, dayOfMonth).show();
         } else {
-            String[] dobArray = mDobEditText.getText().toString().split(Constants.DOB_SEPARATOR);
+            String[] dobArray = Objects.requireNonNull(mDobEditText.getText()).toString().split(Constants.DOB_SEPARATOR);
             int year = Integer.parseInt(dobArray[2]);
             int month = Integer.parseInt(dobArray[1]);
             int dayOfMonth = Integer.parseInt(dobArray[0]);
