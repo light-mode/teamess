@@ -26,12 +26,17 @@ import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.content.res.AppCompatResources;
 import androidx.preference.PreferenceManager;
 
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.load.engine.GlideException;
+import com.bumptech.glide.request.RequestListener;
+import com.bumptech.glide.request.target.Target;
 import com.example.myapplication.R;
 import com.example.myapplication.document.UsersDocument;
 import com.example.myapplication.utilities.Constants;
@@ -92,8 +97,7 @@ public class UserActivity extends BaseActivity implements DatePickerDialog.OnDat
 
         setReference();
         setDefault();
-        loadData();
-        setListener();
+        loadDocumentRelatedInfo();
     }
 
     private void setReference() {
@@ -119,7 +123,6 @@ public class UserActivity extends BaseActivity implements DatePickerDialog.OnDat
 
     private void setDefault() {
         mDobEditText.setInputType(InputType.TYPE_NULL);
-        mSaveButton.setEnabled(false);
         mSaveButton.setText(mUsernameNotSet ? getString(R.string.activity_user_button_save_text_continue) : getString(R.string.activity_user_button_save_text_save));
     }
 
@@ -127,6 +130,7 @@ public class UserActivity extends BaseActivity implements DatePickerDialog.OnDat
         mAvatarImageView.setOnClickListener(v -> onAvatarImageViewClick());
         mChooseImageButton.setOnClickListener(v -> onChooseImageButtonClick());
         mTakePhotoButton.setOnClickListener(v -> onTakePhotoButtonClick());
+        mDobEditText.setOnClickListener(v -> onDobEditTextClick());
         mSaveButton.setOnClickListener(v -> onSaveButtonClick());
         mUsernameEditText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -142,15 +146,13 @@ public class UserActivity extends BaseActivity implements DatePickerDialog.OnDat
                 String username = Formatter.formatName(s.toString());
                 if (username.length() < Constants.NAME_LENGTH_MIN) {
                     mUsernameTextInputLayout.setError(getString(R.string.activity_user_text_input_layout_username_error_min, 5));
-                    mSaveButton.setEnabled(false);
                 } else if (username.length() > Constants.NAME_LENGTH_MAX) {
                     mUsernameTextInputLayout.setError(getString(R.string.activity_user_text_input_layout_username_error_max));
-                    mSaveButton.setEnabled(false);
                 } else {
                     mUsernameTextInputLayout.setError(null);
                     mDocumentHasChanged = mUsersDocument == null || !username.equals(mUsersDocument.getUsername());
-                    checkSaveButtonEnable();
                 }
+                checkSaveButtonEnable();
             }
         });
         mBioEditText.addTextChangedListener(new TextWatcher() {
@@ -175,18 +177,6 @@ public class UserActivity extends BaseActivity implements DatePickerDialog.OnDat
         mSaveButton.setEnabled(mAvatarHasChanged || mDocumentHasChanged);
     }
 
-    private void loadData() {
-        loadFileRelatedInfo();
-        loadDocumentRelatedInfo();
-    }
-
-    private void loadFileRelatedInfo() {
-        StorageReference avatarRef = Utils.getUsersAvatarRef(mCurrentUid);
-        Glide.with(this).load(avatarRef).error(R.drawable.ic_baseline_person_24)
-                .skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE)
-                .into(mAvatarImageView);
-    }
-
     private void loadDocumentRelatedInfo() {
         Utils.getUsersRef().document(mCurrentUid).get().addOnCompleteListener(task -> {
             if (!task.isSuccessful() || task.getResult() == null) {
@@ -200,9 +190,28 @@ public class UserActivity extends BaseActivity implements DatePickerDialog.OnDat
                 mUsernameEditText.setText(mUsersDocument.getUsername());
                 mDobEditText.setText(mUsersDocument.getDob());
                 mBioEditText.setText(mUsersDocument.getBio());
-                mDobEditText.setOnClickListener(v -> onDobEditTextClick());
             }
+            loadFileRelatedInfo();
         });
+    }
+
+    private void loadFileRelatedInfo() {
+        StorageReference avatarRef = Utils.getUsersAvatarRef(mCurrentUid);
+        Glide.with(this).load(avatarRef).error(R.drawable.ic_baseline_person_24)
+                .skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE)
+                .addListener(new RequestListener<Drawable>() {
+                    @Override
+                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                        setListener();
+                        return false;
+                    }
+
+                    @Override
+                    public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                        setListener();
+                        return false;
+                    }
+                }).into(mAvatarImageView);
     }
 
     private void onAvatarImageViewClick() {
@@ -268,14 +277,25 @@ public class UserActivity extends BaseActivity implements DatePickerDialog.OnDat
         if (result.getResultCode() != RESULT_OK || intent == null) {
             return;
         }
-        mAvatarHasChanged = true;
         Bitmap bitmap = (Bitmap) intent.getExtras().get("data");
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
         byte[] data = byteArrayOutputStream.toByteArray();
         Glide.with(this).load(data).error(R.drawable.ic_baseline_person_24)
                 .skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE)
-                .into(mAvatarImageView);
+                .addListener(new RequestListener<Drawable>() {
+                    @Override
+                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                        mAvatarHasChanged = true;
+                        checkSaveButtonEnable();
+                        return false;
+                    }
+                }).into(mAvatarImageView);
     }
 
     private void onGetImageLauncherReturn(@NonNull ActivityResult result) {
@@ -285,11 +305,19 @@ public class UserActivity extends BaseActivity implements DatePickerDialog.OnDat
         Uri uri = result.getData().getData();
         Glide.with(this).load(uri).error(R.drawable.ic_baseline_person_24)
                 .skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE)
-                .into(mAvatarImageView);
-        mAvatarHasChanged = true;
-        if (mUsernameTextInputLayout.getError() == null) {
-            mSaveButton.setEnabled(true);
-        }
+                .addListener(new RequestListener<Drawable>() {
+                    @Override
+                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
+                        return false;
+                    }
+
+                    @Override
+                    public boolean onResourceReady(Drawable resource, Object model, Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                        mAvatarHasChanged = true;
+                        checkSaveButtonEnable();
+                        return false;
+                    }
+                }).into(mAvatarImageView);
     }
 
     private void onSaveButtonClick() {
@@ -331,8 +359,8 @@ public class UserActivity extends BaseActivity implements DatePickerDialog.OnDat
         UsersDocument usersDocument = new UsersDocument();
         usersDocument.setUsername(username);
         usersDocument.setUsernameLowercase(username.toLowerCase());
-        usersDocument.setDob(dob);
-        usersDocument.setBio(bio);
+        usersDocument.setDob(dob.isEmpty() ? null : dob);
+        usersDocument.setBio(bio.isEmpty() ? null : bio);
         usersDocument.setStatus(Constants.STATUS_ONLINE);
         Utils.getUsersRef().document(mCurrentUid).set(usersDocument).addOnCompleteListener(task -> {
             if (!task.isSuccessful()) {
@@ -400,13 +428,14 @@ public class UserActivity extends BaseActivity implements DatePickerDialog.OnDat
         int thisDayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
         if (year > thisYear || (year == thisYear && month > thisMonth)
                 || (year == thisYear && month == thisMonth && dayOfMonth > thisDayOfMonth)) {
+            mDobEditText.setText("");
             mDobTextInputLayout.setError(getString(R.string.error_invalid_dob));
         } else {
             mDobTextInputLayout.setError(null);
             String dob = getString(R.string.dob_format, dayOfMonth, month + 1, year);
             mDobEditText.setText(dob);
-            mDocumentHasChanged = !dob.equals(mUsersDocument.getDob());
-            checkSaveButtonEnable();
+            mDocumentHasChanged = mUsersDocument == null || !dob.equals(mUsersDocument.getDob());
         }
+        checkSaveButtonEnable();
     }
 }

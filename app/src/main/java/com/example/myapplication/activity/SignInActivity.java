@@ -16,7 +16,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myapplication.R;
 import com.example.myapplication.adapter.LanguageAdapter;
-import com.example.myapplication.adapter.SearchResultAdapter;
 import com.example.myapplication.pojo.Language;
 import com.example.myapplication.utilities.Constants;
 import com.example.myapplication.utilities.Utils;
