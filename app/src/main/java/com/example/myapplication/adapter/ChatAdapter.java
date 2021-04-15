@@ -183,7 +183,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
                     }
                 } else if (content.contains(Constants.GROUP_AVATAR_CHANGED)) {
                     Glide.with(mContext).load(Utils.getChatsAvatarRef(usersChatsDocument.getId()))
-                            .error(R.drawable.ic_baseline_group_24)
+                            .error(Utils.getDefaultDrawable(mContext, Constants.DEFAULT_GROUP_AVATAR_CODE))
                             .skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE)
                             .into(holder.mAvatarImageView);
                     message = mContext.getString(R.string.system_message_format_group_avatar_changed,
@@ -232,7 +232,8 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ViewHolder> {
                 : Utils.getChatsAvatarRef(usersChatsDocument.getId());
         Glide.with(mContext).load(avatarRef)
                 .error(Constants.CHAT_TYPE_SINGLE.equals(usersChatsDocument.getType())
-                        ? R.drawable.ic_baseline_person_24 : R.drawable.ic_baseline_group_24)
+                        ? Utils.getDefaultDrawable(mContext, Constants.DEFAULT_PERSON_AVATAR_CODE)
+                        : Utils.getDefaultDrawable(mContext, Constants.DEFAULT_GROUP_AVATAR_CODE))
                 .skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE)
                 .into(holder.mAvatarImageView);
     }

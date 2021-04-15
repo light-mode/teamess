@@ -14,6 +14,8 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.myapplication.R;
 import com.example.myapplication.pojo.Member;
+import com.example.myapplication.utilities.Constants;
+import com.example.myapplication.utilities.Utils;
 
 import java.util.List;
 
@@ -40,7 +42,7 @@ public class MemberAdapter extends RecyclerView.Adapter<MemberAdapter.ViewHolder
         holder.mMember = member;
         holder.mUsernameTextView.setText(member.getUsername());
         Glide.with(mContext).load(member.getAvatar())
-                .error(R.drawable.ic_baseline_person_24)
+                .error(Utils.getDefaultDrawable(mContext, Constants.DEFAULT_PERSON_AVATAR_CODE))
                 .skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE)
                 .into(holder.mAvatarImageView);
     }

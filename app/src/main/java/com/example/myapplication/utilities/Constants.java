@@ -82,4 +82,8 @@ public class Constants {
     public static final int ICON_VERY_SATISFIED = 5;
 
     public static final String DOB_SEPARATOR = "-";
+
+    public static final int DEFAULT_PERSON_AVATAR_CODE = 0;
+    public static final int DEFAULT_GROUP_AVATAR_CODE = 1;
+    public static final int DEFAULT_IMAGE_CODE = 2;
 }

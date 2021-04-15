@@ -175,7 +175,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
         }
         String senderUid = chatsMessagesDocument.getSenderUid();
         Glide.with(mContext).load(Utils.getUsersAvatarRef(senderUid))
-                .error(R.drawable.ic_baseline_person_24)
+                .error(Utils.getDefaultDrawable(mContext, Constants.DEFAULT_PERSON_AVATAR_CODE))
                 .skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE)
                 .into(holder.mAvatarImageView);
     }
@@ -283,7 +283,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
                 holder.mContentTextView.setTextColor(ContextCompat.getColor(mContext,
                         chatsMessagesDocument.getSenderUid().equals(mCurrentUid)
                                 ? R.color.black : R.color.design_default_color_on_primary));
-                holder.mContentTextView.setOnClickListener(v -> onPrimaryViewClick(chatsMessagesDocument, holder));
+                holder.mContentTextView.setOnClickListener(v -> onTextViewClick(chatsMessagesDocument, holder));
                 break;
             case VIEW_TYPE_ICON_LEFT:
             case VIEW_TYPE_ICON_RIGHT:
@@ -316,7 +316,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
                         holder.mContentIconView.setImageResource(R.drawable.ic_baseline_sentiment_very_dissatisfied_24);
                         break;
                 }
-                holder.mContentIconView.setOnClickListener(v -> onPrimaryViewClick(chatsMessagesDocument, holder));
+                holder.mContentIconView.setOnClickListener(v -> onIconViewClick(holder));
                 break;
             case VIEW_TYPE_IMAGE_LEFT:
             case VIEW_TYPE_IMAGE_RIGHT:
@@ -325,7 +325,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
                 }
                 String imageId = chatsMessagesDocument.getContent();
                 Glide.with(mContext).load(Utils.getChatsFileRef(mChatId, imageId))
-                        .error(R.drawable.ic_baseline_broken_image_24)
+                        .error(Utils.getDefaultDrawable(mContext, Constants.DEFAULT_IMAGE_CODE))
                         .skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE)
                         .addListener(new RequestListener<Drawable>() {
                             @Override
@@ -344,7 +344,7 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
             case VIEW_TYPE_FILE_RIGHT:
                 if (holder.mContentTextView != null) {
                     holder.mContentTextView.setText(chatsMessagesDocument.getContent());
-                    holder.mContentTextView.setOnClickListener(v -> onPrimaryViewClick(chatsMessagesDocument, holder));
+                    holder.mContentTextView.setOnClickListener(v -> onFileViewClick(chatsMessagesDocument, holder));
                 }
                 break;
             case VIEW_TYPE_SYSTEM:
@@ -403,87 +403,168 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.ViewHold
         }
     }
 
-    private void onPrimaryViewClick(ChatsMessagesDocument chatsMessagesDocument, ViewHolder holder) {
-        hideDisplayingSecondaryView();
-        showSecondaryViewFromSelectedPrimaryView(chatsMessagesDocument, holder);
+    private void onTextViewClick(ChatsMessagesDocument chatsMessagesDocument, @NonNull ViewHolder holder) {
+        handleTimestampTextViewVisibility(holder);
+        handleSeenTextViewVisibility(holder);
+        handleCopyButtonVisibility(holder, chatsMessagesDocument);
+        handleDeleteButtonVisibility(holder, chatsMessagesDocument);
+
+        hideDisplayingDownloadButton();
+        if (!chatsMessagesDocument.getSenderUid().equals(mCurrentUid)) {
+            hideDisplayingDeleteButton();
+        }
+        hideDisplayingFullscreenButton();
     }
 
-    private void onImageViewClick(ChatsMessagesDocument chatsMessagesDocument, ViewHolder holder, String imageId, Drawable drawable) {
-        hideDisplayingSecondaryView();
-        showSecondaryViewsFromSelectedImageView(chatsMessagesDocument, holder, imageId, drawable);
+    private void onIconViewClick(ViewHolder holder) {
+        handleTimestampTextViewVisibility(holder);
+        handleSeenTextViewVisibility(holder);
+
+        hideDisplayingCopyButton();
+        hideDisplayingDownloadButton();
+        hideDisplayingDeleteButton();
+        hideDisplayingFullscreenButton();
     }
 
-    public void hideDisplayingSecondaryView() {
-        if (mDisplayingTimestampTextView != null) {
-            mDisplayingTimestampTextView.setVisibility(View.GONE);
-            mDisplayingTimestampTextView = null;
+    private void onFileViewClick(ChatsMessagesDocument chatsMessagesDocument, ViewHolder holder) {
+        handleTimestampTextViewVisibility(holder);
+        handleSeenTextViewVisibility(holder);
+        handleDownloadButtonVisibility(holder, chatsMessagesDocument);
+
+        hideDisplayingCopyButton();
+        hideDisplayingDeleteButton();
+        hideDisplayingFullscreenButton();
+    }
+
+    private void onImageViewClick(ChatsMessagesDocument chatsMessagesDocument, @NonNull ViewHolder holder, String imageId, Drawable image) {
+        handleTimestampTextViewVisibility(holder);
+        handleSeenTextViewVisibility(holder);
+        handleDownloadButtonVisibility(holder, chatsMessagesDocument);
+        handleFullscreenButtonVisibility(holder, imageId, image);
+
+        hideDisplayingCopyButton();
+        hideDisplayingDeleteButton();
+    }
+
+    private void handleTimestampTextViewVisibility(@NonNull ViewHolder holder) {
+        if (holder.mTimestampTextView != null) {
+            if (holder.mTimestampTextView.equals(mDisplayingTimestampTextView)) {
+                mDisplayingTimestampTextView.setVisibility(View.GONE);
+                mDisplayingTimestampTextView = null;
+            } else {
+                if (mDisplayingTimestampTextView != null) {
+                    mDisplayingTimestampTextView.setVisibility(View.GONE);
+                }
+                holder.mTimestampTextView.setVisibility(View.VISIBLE);
+                mDisplayingTimestampTextView = holder.mTimestampTextView;
+            }
         }
-        if (mDisplayingSeenTextView != null) {
-            mDisplayingSeenTextView.setVisibility(View.GONE);
-            mDisplayingSeenTextView = null;
+    }
+
+    private void handleSeenTextViewVisibility(@NonNull ViewHolder holder) {
+        if (holder.mSeenTextView != null) {
+            if (holder.mSeenTextView.equals(mDisplayingSeenTextView)) {
+                mDisplayingSeenTextView.setVisibility(View.GONE);
+                mDisplayingSeenTextView = null;
+            } else {
+                if (mDisplayingSeenTextView != null) {
+                    mDisplayingSeenTextView.setVisibility(View.GONE);
+                }
+                holder.mSeenTextView.setVisibility(View.VISIBLE);
+                mDisplayingSeenTextView = holder.mSeenTextView;
+            }
         }
+    }
+
+    private void handleCopyButtonVisibility(@NonNull ViewHolder holder, ChatsMessagesDocument chatsMessagesDocument) {
+        if (holder.mCopyButton != null) {
+            if (holder.mCopyButton.equals(mDisplayingCopyButton)) {
+                mDisplayingCopyButton.setVisibility(View.GONE);
+                mDisplayingCopyButton = null;
+            } else {
+                if (mDisplayingCopyButton != null) {
+                    mDisplayingCopyButton.setVisibility(View.GONE);
+                }
+                holder.mCopyButton.setVisibility(View.VISIBLE);
+                holder.mCopyButton.setOnClickListener(v -> onCopyButtonClick(chatsMessagesDocument.getContent()));
+                mDisplayingCopyButton = holder.mCopyButton;
+            }
+        }
+    }
+
+    private void handleDownloadButtonVisibility(@NonNull ViewHolder holder, ChatsMessagesDocument chatsMessagesDocument) {
+        if (holder.mDownloadButton != null) {
+            if (holder.mDownloadButton.equals(mDisplayingDownloadButton)) {
+                mDisplayingDownloadButton.setVisibility(View.GONE);
+                mDisplayingDownloadButton = null;
+            } else {
+                if (mDisplayingDownloadButton != null) {
+                    mDisplayingDownloadButton.setVisibility(View.GONE);
+                }
+                holder.mDownloadButton.setVisibility(View.VISIBLE);
+                holder.mDownloadButton.setOnClickListener(v -> mOnClickListener.onDownloadButtonClick(chatsMessagesDocument));
+                mDisplayingDownloadButton = holder.mDownloadButton;
+            }
+        }
+    }
+
+    private void handleFullscreenButtonVisibility(@NonNull ViewHolder holder, String imageId, Drawable image) {
+        if (holder.mFullscreenButton != null) {
+            if (holder.mFullscreenButton.equals(mDisplayingFullscreenButton)) {
+                mDisplayingFullscreenButton.setVisibility(View.GONE);
+                mDisplayingFullscreenButton = null;
+            } else {
+                if (mDisplayingFullscreenButton != null) {
+                    mDisplayingFullscreenButton.setVisibility(View.GONE);
+                }
+                holder.mFullscreenButton.setVisibility(View.VISIBLE);
+                holder.mFullscreenButton.setOnClickListener(v -> mOnClickListener.onFullscreenButtonClick(imageId, image));
+                mDisplayingFullscreenButton = holder.mFullscreenButton;
+            }
+        }
+    }
+
+    private void handleDeleteButtonVisibility(@NonNull ViewHolder holder, ChatsMessagesDocument chatsMessagesDocument) {
+        if (holder.mDeleteButton != null) {
+            if (holder.mDeleteButton.equals(mDisplayingDeleteButton)) {
+                mDisplayingDeleteButton.setVisibility(View.GONE);
+                mDisplayingDeleteButton = null;
+            } else {
+                if (mDisplayingDeleteButton != null) {
+                    mDisplayingDeleteButton.setVisibility(View.GONE);
+                }
+                holder.mDeleteButton.setVisibility(View.VISIBLE);
+                holder.mDeleteButton.setOnClickListener(v -> mOnClickListener.onDeleteButtonClick(chatsMessagesDocument));
+                mDisplayingDeleteButton = holder.mDeleteButton;
+            }
+        }
+    }
+
+    private void hideDisplayingCopyButton() {
         if (mDisplayingCopyButton != null) {
             mDisplayingCopyButton.setVisibility(View.GONE);
             mDisplayingCopyButton = null;
         }
+    }
+
+    private void hideDisplayingDownloadButton() {
         if (mDisplayingDownloadButton != null) {
             mDisplayingDownloadButton.setVisibility(View.GONE);
             mDisplayingDownloadButton = null;
         }
+    }
+
+    private void hideDisplayingDeleteButton() {
         if (mDisplayingDeleteButton != null) {
             mDisplayingDeleteButton.setVisibility(View.GONE);
             mDisplayingDeleteButton = null;
         }
+    }
+
+    private void hideDisplayingFullscreenButton() {
         if (mDisplayingFullscreenButton != null) {
             mDisplayingFullscreenButton.setVisibility(View.GONE);
             mDisplayingFullscreenButton = null;
-        }
-    }
-
-    private void showSecondaryViewFromSelectedPrimaryView(ChatsMessagesDocument chatsMessagesDocument, @NonNull ViewHolder holder) {
-        if (holder.mTimestampTextView != null) {
-            holder.mTimestampTextView.setVisibility(View.VISIBLE);
-            mDisplayingTimestampTextView = holder.mTimestampTextView;
-        }
-        if (holder.mSeenTextView != null) {
-            holder.mSeenTextView.setVisibility(View.VISIBLE);
-            mDisplayingSeenTextView = holder.mSeenTextView;
-        }
-        if (holder.mCopyButton != null) {
-            holder.mCopyButton.setVisibility(View.VISIBLE);
-            holder.mCopyButton.setOnClickListener(v -> onCopyButtonClick(chatsMessagesDocument.getContent()));
-            mDisplayingCopyButton = holder.mCopyButton;
-        }
-        if (holder.mDownloadButton != null) {
-            holder.mDownloadButton.setVisibility(View.VISIBLE);
-            holder.mDownloadButton.setOnClickListener(v -> mOnClickListener.onDownloadButtonClick(chatsMessagesDocument));
-            mDisplayingDownloadButton = holder.mDownloadButton;
-        }
-        if (holder.mDeleteButton != null) {
-            holder.mDeleteButton.setVisibility(View.VISIBLE);
-            holder.mDeleteButton.setOnClickListener(v -> mOnClickListener.onDeleteButtonClick(chatsMessagesDocument));
-            mDisplayingDeleteButton = holder.mDeleteButton;
-        }
-    }
-
-    private void showSecondaryViewsFromSelectedImageView(ChatsMessagesDocument chatsMessagesDocument, @NonNull ViewHolder holder, String imageId, Drawable image) {
-        if (holder.mTimestampTextView != null) {
-            holder.mTimestampTextView.setVisibility(View.VISIBLE);
-            mDisplayingTimestampTextView = holder.mTimestampTextView;
-        }
-        if (holder.mSeenTextView != null) {
-            holder.mSeenTextView.setVisibility(View.VISIBLE);
-            mDisplayingSeenTextView = holder.mSeenTextView;
-        }
-        if (holder.mDownloadButton != null) {
-            holder.mDownloadButton.setVisibility(View.VISIBLE);
-            holder.mDownloadButton.setOnClickListener(v -> mOnClickListener.onDownloadButtonClick(chatsMessagesDocument));
-            mDisplayingDownloadButton = holder.mDownloadButton;
-        }
-        if (holder.mFullscreenButton != null) {
-            holder.mFullscreenButton.setVisibility(View.VISIBLE);
-            holder.mFullscreenButton.setOnClickListener(v -> mOnClickListener.onFullscreenButtonClick(imageId, image));
-            mDisplayingFullscreenButton = holder.mFullscreenButton;
         }
     }
 

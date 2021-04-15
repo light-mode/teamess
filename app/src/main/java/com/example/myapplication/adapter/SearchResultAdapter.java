@@ -10,7 +10,6 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
@@ -21,6 +20,8 @@ import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
 import com.example.myapplication.R;
 import com.example.myapplication.pojo.SearchResult;
+import com.example.myapplication.utilities.Constants;
+import com.example.myapplication.utilities.Utils;
 
 import java.util.List;
 
@@ -49,12 +50,12 @@ public class SearchResultAdapter extends RecyclerView.Adapter<SearchResultAdapte
         holder.mBioTextView.setText(searchResult.getBio());
         holder.mUsernameTextView.setText(searchResult.getUsername());
         Glide.with(mContext).load(searchResult.getAvatarRef())
-                .error(R.drawable.ic_baseline_person_24)
+                .error(Utils.getDefaultDrawable(mContext, Constants.DEFAULT_PERSON_AVATAR_CODE))
                 .skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE)
                 .addListener(new RequestListener<Drawable>() {
                     @Override
                     public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Drawable> target, boolean isFirstResource) {
-                        Drawable drawable = ContextCompat.getDrawable(mContext, R.drawable.ic_baseline_person_24);
+                        Drawable drawable = Utils.getDefaultDrawable(mContext, Constants.DEFAULT_PERSON_AVATAR_CODE);
                         holder.itemView.setOnClickListener(v -> mOnItemClickListener.onItemClick(
                                 searchResult.getUid(), searchResult.getUsername(), drawable));
                         return false;

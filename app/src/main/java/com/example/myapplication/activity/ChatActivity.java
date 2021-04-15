@@ -193,8 +193,8 @@ public class ChatActivity extends BaseActivity implements MessageAdapter.OnClick
             avatarRef = Utils.getChatsAvatarRef(mChatId);
         }
         Glide.with(this).load(avatarRef).error(Constants.CHAT_TYPE_SINGLE.equals(mChatType)
-                ? R.drawable.ic_baseline_person_24
-                : R.drawable.ic_baseline_group_24)
+                ? Utils.getDefaultDrawable(this, Constants.DEFAULT_PERSON_AVATAR_CODE)
+                : Utils.getDefaultDrawable(this, Constants.DEFAULT_GROUP_AVATAR_CODE))
                 .skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE)
                 .into(mAvatarImageView);
         mChatNameTextView = view.findViewById(R.id.activity_chat_action_bar_text_view_chat_name);
@@ -220,18 +220,6 @@ public class ChatActivity extends BaseActivity implements MessageAdapter.OnClick
         mRecyclerView.setLayoutManager(layoutManager);
         mMessageAdapter = new MessageAdapter(this, mChatId, mChatType, mChatsMessagesDocuments, mOthersUsername, this);
         mRecyclerView.setAdapter(mMessageAdapter);
-        mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-                super.onScrollStateChanged(recyclerView, newState);
-            }
-
-            @Override
-            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-                mMessageAdapter.hideDisplayingSecondaryView();
-            }
-        });
     }
 
     private void setListener() {
@@ -253,7 +241,7 @@ public class ChatActivity extends BaseActivity implements MessageAdapter.OnClick
             }
         });
         mMessageEditText.setOnEditorActionListener((v, actionId, event) -> {
-            if (EditorInfo.IME_ACTION_DONE == actionId && !mMessageEditText.getText().toString().isEmpty()) {
+            if (EditorInfo.IME_ACTION_DONE == actionId) {
                 onSendButtonClick();
             }
             return false;
@@ -392,6 +380,7 @@ public class ChatActivity extends BaseActivity implements MessageAdapter.OnClick
         Timestamp now = Timestamp.now();
         Cursor cursor = getContentResolver().query(uri, null, null, null, null);
         if (cursor == null) {
+            mProgressBar.setVisibility(View.INVISIBLE);
             Toast.makeText(this, getString(R.string.error_upload_file_unknown), Toast.LENGTH_LONG).show();
             return;
         }
@@ -408,24 +397,29 @@ public class ChatActivity extends BaseActivity implements MessageAdapter.OnClick
         }
         String extension = fileName.split("\\.")[fileName.split("\\.").length - 1];
         String fileId = now.getSeconds() + Long.toString(now.getNanoseconds()) + "." + extension;
-        Utils.getChatsFileRef(mChatId, fileId).putFile(uri).addOnCompleteListener(uploadFileTask -> {
-            if (!uploadFileTask.isSuccessful() || uploadFileTask.getResult() == null) {
-                Utils.logTaskException(TAG, uploadFileTask);
-                return;
-            }
-            uploadFileTask.getResult().getStorage().getDownloadUrl().addOnCompleteListener(getDownloadUrlTask -> {
-                if (!getDownloadUrlTask.isSuccessful() || getDownloadUrlTask.getResult() == null) {
-                    Utils.logTaskException(TAG, getDownloadUrlTask);
+        try {
+            Utils.getChatsFileRef(mChatId, fileId).putFile(uri).addOnCompleteListener(uploadFileTask -> {
+                if (!uploadFileTask.isSuccessful() || uploadFileTask.getResult() == null) {
+                    Utils.logTaskException(TAG, uploadFileTask);
                     return;
                 }
-                String downloadUrl = getDownloadUrlTask.getResult().toString();
-                if (getContentResolver().getType(uri).contains("image/")) {
-                    checkAddChatsMessagesDocument(fileId, Constants.MESSAGE_TYPE_IMAGE, downloadUrl);
-                } else {
-                    checkAddChatsMessagesDocument(fileName, Constants.MESSAGE_TYPE_FILE, downloadUrl);
-                }
+                uploadFileTask.getResult().getStorage().getDownloadUrl().addOnCompleteListener(getDownloadUrlTask -> {
+                    if (!getDownloadUrlTask.isSuccessful() || getDownloadUrlTask.getResult() == null) {
+                        Utils.logTaskException(TAG, getDownloadUrlTask);
+                        return;
+                    }
+                    String downloadUrl = getDownloadUrlTask.getResult().toString();
+                    if (getContentResolver().getType(uri).contains("image/")) {
+                        checkAddChatsMessagesDocument(fileId, Constants.MESSAGE_TYPE_IMAGE, downloadUrl);
+                    } else {
+                        checkAddChatsMessagesDocument(fileName, Constants.MESSAGE_TYPE_FILE, downloadUrl);
+                    }
+                });
             });
-        });
+        } catch (Exception e) {
+            mProgressBar.setVisibility(View.INVISIBLE);
+            Toast.makeText(this, getString(R.string.error_upload_file_unknown), Toast.LENGTH_LONG).show();
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -447,7 +441,7 @@ public class ChatActivity extends BaseActivity implements MessageAdapter.OnClick
             if (!avatarTimestamp.equals(mAvatarTimestamp)) {
                 mAvatarTimestamp = avatarTimestamp;
                 Glide.with(getApplicationContext()).load(Utils.getChatsAvatarRef(mChatId))
-                        .error(R.drawable.ic_baseline_group_24)
+                        .error(Utils.getDefaultDrawable(this, Constants.DEFAULT_GROUP_AVATAR_CODE))
                         .skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE)
                         .into(mAvatarImageView);
             }
@@ -611,6 +605,7 @@ public class ChatActivity extends BaseActivity implements MessageAdapter.OnClick
     }
 
     private void onReactionButtonClick(int icon) {
+        onAddReactionButtonClick();
         checkAddChatsMessagesDocument(icon + "", Constants.MESSAGE_TYPE_ICON, null);
     }
 
@@ -619,6 +614,7 @@ public class ChatActivity extends BaseActivity implements MessageAdapter.OnClick
         if (content.isEmpty()) {
             return;
         }
+        mSendButton.setClickable(false);
         checkAddChatsMessagesDocument(content, Constants.MESSAGE_TYPE_TEXT, null);
     }
 
@@ -703,9 +699,9 @@ public class ChatActivity extends BaseActivity implements MessageAdapter.OnClick
         switch (type) {
             case Constants.MESSAGE_TYPE_TEXT:
                 mMessageEditText.setText("");
+                mSendButton.setClickable(true);
                 break;
             case Constants.MESSAGE_TYPE_ICON:
-                onAddReactionButtonClick();
                 break;
             case Constants.MESSAGE_TYPE_IMAGE:
             case Constants.MESSAGE_TYPE_FILE:

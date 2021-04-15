@@ -28,7 +28,6 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.content.res.AppCompatResources;
 import androidx.preference.PreferenceManager;
 
 import com.bumptech.glide.Glide;
@@ -75,14 +74,7 @@ public class UserActivity extends BaseActivity implements DatePickerDialog.OnDat
     private UsersDocument mUsersDocument;
     private ActivityResultLauncher<Intent> mCameraLauncher;
     private ActivityResultLauncher<Intent> mGetContentLauncher;
-    private final ActivityResultLauncher<Intent> mActivityLauncher;
-
-    public UserActivity() {
-        mActivityLauncher = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                result -> {
-                });
-    }
+    private ActivityResultLauncher<Intent> mActivityLauncher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -114,6 +106,10 @@ public class UserActivity extends BaseActivity implements DatePickerDialog.OnDat
         mGetContentLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 this::onGetImageLauncherReturn);
+        mActivityLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                result -> {
+                });
     }
 
     private void setActionBar() {
@@ -180,7 +176,11 @@ public class UserActivity extends BaseActivity implements DatePickerDialog.OnDat
     }
 
     private void checkSaveButtonEnable() {
-        mSaveButton.setEnabled(mAvatarHasChanged || mDocumentHasChanged);
+        if (mUsernameTextInputLayout.getError() == null && mDobTextInputLayout.getError() == null) {
+            mSaveButton.setEnabled(mAvatarHasChanged || mDocumentHasChanged);
+        } else {
+            mSaveButton.setEnabled(false);
+        }
     }
 
     private void loadDocumentRelatedInfo() {
@@ -203,7 +203,8 @@ public class UserActivity extends BaseActivity implements DatePickerDialog.OnDat
 
     private void loadFileRelatedInfo() {
         StorageReference avatarRef = Utils.getUsersAvatarRef(mCurrentUid);
-        Glide.with(this).load(avatarRef).error(R.drawable.ic_baseline_person_24)
+        Glide.with(this).load(avatarRef)
+                .error(Utils.getDefaultDrawable(this, Constants.DEFAULT_PERSON_AVATAR_CODE))
                 .skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE)
                 .addListener(new RequestListener<Drawable>() {
                     @Override
@@ -287,7 +288,8 @@ public class UserActivity extends BaseActivity implements DatePickerDialog.OnDat
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
         byte[] data = byteArrayOutputStream.toByteArray();
-        Glide.with(this).load(data).error(R.drawable.ic_baseline_person_24)
+        Glide.with(this).load(data)
+                .error(Utils.getDefaultDrawable(this, Constants.DEFAULT_PERSON_AVATAR_CODE))
                 .skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE)
                 .addListener(new RequestListener<Drawable>() {
                     @Override
@@ -309,7 +311,8 @@ public class UserActivity extends BaseActivity implements DatePickerDialog.OnDat
             return;
         }
         Uri uri = result.getData().getData();
-        Glide.with(this).load(uri).error(R.drawable.ic_baseline_person_24)
+        Glide.with(this).load(uri)
+                .error(Utils.getDefaultDrawable(this, Constants.DEFAULT_PERSON_AVATAR_CODE))
                 .skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE)
                 .addListener(new RequestListener<Drawable>() {
                     @Override
@@ -389,7 +392,7 @@ public class UserActivity extends BaseActivity implements DatePickerDialog.OnDat
     }
 
     private void uploadDefaultAvatar() {
-        Drawable drawable = AppCompatResources.getDrawable(this, R.drawable.ic_baseline_person_24);
+        Drawable drawable = Utils.getDefaultDrawable(this, Constants.DEFAULT_PERSON_AVATAR_CODE);
         Bitmap bitmap = Converter.convertDrawableToBitmap(drawable);
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);

@@ -18,8 +18,9 @@ import java.util.Arrays;
 import java.util.List;
 
 public class SettingFragment extends PreferenceFragmentCompat {
-    private SettingActivity mActivity;
     public SwitchPreferenceCompat appLockPref;
+
+    private SettingActivity mActivity;
 
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {

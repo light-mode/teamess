@@ -5,12 +5,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.graphics.drawable.Drawable;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.content.res.AppCompatResources;
 import androidx.biometric.BiometricManager;
 import androidx.fragment.app.FragmentActivity;
 
@@ -178,5 +180,23 @@ public class Utils {
         config.locale = locale;
         activity.getBaseContext().getResources()
                 .updateConfiguration(config, activity.getBaseContext().getResources().getDisplayMetrics());
+    }
+
+    public static Drawable getDefaultDrawable(Context context, int code) {
+        int id = 0;
+        switch (code) {
+            case Constants.DEFAULT_PERSON_AVATAR_CODE:
+                id = R.drawable.ic_baseline_person_24;
+                break;
+            case Constants.DEFAULT_GROUP_AVATAR_CODE:
+                id = R.drawable.ic_baseline_group_24;
+                break;
+            case Constants.DEFAULT_IMAGE_CODE:
+                id = R.drawable.ic_baseline_broken_image_24;
+                break;
+            default:
+                break;
+        }
+        return AppCompatResources.getDrawable(context, id);
     }
 }

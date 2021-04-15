@@ -37,6 +37,7 @@ public class SettingActivity extends AppCompatActivity implements CreateCredenti
     private ActivityResultLauncher<Intent> mSecuritySettingsLauncher;
     private final SharedPreferences.OnSharedPreferenceChangeListener listener = (sharedPreferences, key) -> {
         if (getString(R.string.pref_language_key).equals(key)) {
+            getIntent().putExtra(Constants.EXTRA_AUTHENTICATED, true);
             recreate();
         }
     };

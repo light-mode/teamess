@@ -240,7 +240,7 @@ public class GroupFragment extends Fragment {
 
     private void setDefaultModeCreateGroup() {
         Glide.with(this).asDrawable().load(Utils.getUsersAvatarRef(mCurrentUid))
-                .error(R.drawable.ic_baseline_person_24)
+                .error(Utils.getDefaultDrawable(mContext, Constants.DEFAULT_PERSON_AVATAR_CODE))
                 .skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE)
                 .into(new CustomTarget<Drawable>() {
                     @Override
@@ -316,7 +316,7 @@ public class GroupFragment extends Fragment {
             if (!avatarTimestamp.equals(mAvatarTimestamp)) {
                 mAvatarTimestamp = avatarTimestamp;
                 Glide.with(mActivity.getApplicationContext()).load(Utils.getChatsAvatarRef(mChatId))
-                        .error(R.drawable.ic_baseline_group_24)
+                        .error(Utils.getDefaultDrawable(mContext, Constants.DEFAULT_GROUP_AVATAR_CODE))
                         .skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE)
                         .into(mAvatarImageView);
             }
@@ -327,7 +327,7 @@ public class GroupFragment extends Fragment {
             if (mMembers.size() < membersUid.size()) {
                 for (String uid : membersUid) {
                     Glide.with(mActivity.getApplicationContext()).asDrawable().load(Utils.getUsersAvatarRef(uid))
-                            .error(R.drawable.ic_baseline_person_24)
+                            .error(Utils.getDefaultDrawable(mContext, Constants.DEFAULT_PERSON_AVATAR_CODE))
                             .skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE)
                             .into(new CustomTarget<Drawable>() {
                                 @Override
@@ -441,7 +441,8 @@ public class GroupFragment extends Fragment {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, byteArrayOutputStream);
         byte[] data = byteArrayOutputStream.toByteArray();
-        Glide.with(this).load(data).error(R.drawable.ic_baseline_person_24)
+        Glide.with(this).load(data)
+                .error(Utils.getDefaultDrawable(mContext, Constants.DEFAULT_PERSON_AVATAR_CODE))
                 .skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE)
                 .addListener(new RequestListener<Drawable>() {
                     @Override
@@ -463,7 +464,8 @@ public class GroupFragment extends Fragment {
             return;
         }
         Uri uri = result.getData().getData();
-        Glide.with(this).load(uri).error(R.drawable.ic_baseline_group_24)
+        Glide.with(this).load(uri)
+                .error(Utils.getDefaultDrawable(mContext, Constants.DEFAULT_GROUP_AVATAR_CODE))
                 .skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE)
                 .addListener(new RequestListener<Drawable>() {
                     @Override

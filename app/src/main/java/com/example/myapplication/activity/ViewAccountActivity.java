@@ -105,7 +105,7 @@ public class ViewAccountActivity extends BaseActivity {
         mBioEditText.setText(usersDocument.getBio());
         mDobEditText.setText(usersDocument.getDob());
         Glide.with(this).load(Utils.getUsersAvatarRef(mOtherUid))
-                .error(R.drawable.ic_baseline_person_24)
+                .error(Utils.getDefaultDrawable(this, Constants.DEFAULT_PERSON_AVATAR_CODE))
                 .skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE)
                 .addListener(new RequestListener<Drawable>() {
                     @Override

@@ -12,6 +12,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.example.myapplication.R;
 import com.example.myapplication.utilities.Constants;
+import com.example.myapplication.utilities.Utils;
 
 public class ViewImageActivity extends BaseActivity {
     @Override
@@ -30,7 +31,7 @@ public class ViewImageActivity extends BaseActivity {
         byte[] image = getIntent().getByteArrayExtra(Constants.EXTRA_IMAGE);
         ImageView mContentImageView = findViewById(R.id.activity_view_image_image_view_content);
         Glide.with(this).load(image)
-                .error(R.drawable.ic_baseline_broken_image_24)
+                .error(Utils.getDefaultDrawable(this, Constants.DEFAULT_IMAGE_CODE))
                 .skipMemoryCache(true).diskCacheStrategy(DiskCacheStrategy.NONE)
                 .into(mContentImageView);
     }

@@ -132,12 +132,12 @@ public class ChatFragment extends Fragment implements ChatAdapter.OnItemClickLis
                 onUsersChatsDocumentChanged(usersChatsDocument, documentChange);
                 return;
             }
-            Utils.getUsersRef().whereIn(FieldPath.documentId(), newUserIds).get().addOnCompleteListener(task1 -> {
-                if (!task1.isSuccessful() || task1.getResult() == null) {
-                    Utils.logTaskException(TAG, task1);
+            Utils.getUsersRef().whereIn(FieldPath.documentId(), newUserIds).get().addOnCompleteListener(getNewUsernameTask -> {
+                if (!getNewUsernameTask.isSuccessful() || getNewUsernameTask.getResult() == null) {
+                    Utils.logTaskException(TAG, getNewUsernameTask);
                     return;
                 }
-                List<DocumentSnapshot> documentSnapshots = task1.getResult().getDocuments();
+                List<DocumentSnapshot> documentSnapshots = getNewUsernameTask.getResult().getDocuments();
                 for (DocumentSnapshot documentSnapshot : documentSnapshots) {
                     String uid = documentSnapshot.getId();
                     String username = Objects.requireNonNull(documentSnapshot.get(Constants.FIELD_USERNAME)).toString();
@@ -165,16 +165,27 @@ public class ChatFragment extends Fragment implements ChatAdapter.OnItemClickLis
 
     private void onUsersChatsDocumentAdded(UsersChatsDocument usersChatsDocument) {
         mUsersChatsDocuments.add(usersChatsDocument);
-        mChatAdapter.notifyItemInserted(mUsersChatsDocuments.size());
-        mTextView.setVisibility(View.INVISIBLE);
+        mUsersChatsDocuments.sort((o1, o2) -> -o1.getLastMessageTimestamp().compareTo(o2.getLastMessageTimestamp()));
+        mChatAdapter.notifyDataSetChanged();
+        if (View.VISIBLE == mTextView.getVisibility()) {
+            mTextView.setVisibility(View.INVISIBLE);
+        }
     }
 
     private void onUsersChatsDocumentModified(UsersChatsDocument usersChatsDocument) {
         UsersChatsDocument displaying = mUsersChatsDocuments.stream()
                 .filter(o -> o.getId().equals(usersChatsDocument.getId())).collect(Collectors.toList()).get(0);
         int position = mUsersChatsDocuments.indexOf(displaying);
-        mUsersChatsDocuments.set(position, usersChatsDocument);
-        mChatAdapter.notifyItemChanged(position);
+        if (position == 0) {
+            mUsersChatsDocuments.set(position, usersChatsDocument);
+            mChatAdapter.notifyItemChanged(position);
+        } else {
+            mUsersChatsDocuments.remove(position);
+            mUsersChatsDocuments.add(0, usersChatsDocument);
+            mChatAdapter.notifyItemRemoved(position);
+            mChatAdapter.notifyItemRangeChanged(position, mUsersChatsDocuments.size());
+            mChatAdapter.notifyItemInserted(0);
+        }
     }
 
     private void onUsersChatsDocumentRemoved(@NonNull UsersChatsDocument usersChatsDocument) {
